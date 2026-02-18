@@ -1,0 +1,369 @@
+2026-02-12T23:32:42.981Z [console][error] A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+%s%s https://react.dev/link/hydration-mismatch 
+
+  ...
+    <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>
+      <HTTPAccessFallbackErrorBoundary pathname="/subscription" notFound={<NotAllowedRootHTTPFallbackError>} ...>
+        <RedirectBoundary>
+          <RedirectErrorBoundary router={{...}}>
+            <Head>
+            <__next_root_layout_boundary__>
+              <SegmentViewNode type="layout" pagePath="layout.tsx">
+                <SegmentTrieNode>
+                <link>
+                <script>
+                <script>
+                <script>
+                <RootLayout>
+                  <html lang="en" suppressHydrationWarning={true}>
+                    <head>
+                    <body className="font-body ..." suppressHydrationWarning={true}>
+                      <ThemeProvider>
+                        <SensorProvider>
+                          <div className="max-w-md m...">
+                            <Header>
+                            ...
+                              <SegmentViewNode type="page" pagePath="subscripti...">
+                                <SegmentTrieNode>
+                                <ClientPageRoot Component={function SubscriptionPage} searchParams={{}} params={{}}>
+                                  <SubscriptionPage params={Promise} searchParams={Promise}>
+                           ...
+2026-02-12T23:32:42.981Z [console][error] A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+%s%s https://react.dev/link/hydration-mismatch 
+
+  ...
+    <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>
+      <HTTPAccessFallbackErrorBoundary pathname="/subscription" notFound={<NotAllowedRootHTTPFallbackError>} ...>
+        <RedirectBoundary>
+          <RedirectErrorBoundary router={{...}}>
+            <Head>
+            <__next_root_layout_boundary__>
+              <SegmentViewNode type="layout" pagePath="layout.tsx">
+                <SegmentTrieNode>
+                <link>
+                <script>
+                <script>
+                <script>
+                <RootLayout>
+                  <html lang="en" suppressHydrationWarning={true}>
+                    <head>
+                    <body className="font-body ..." suppressHydrationWarning={true}>
+                      <ThemeProvider>
+                        <SensorProvider>
+                          <div className="max-w-md m...">
+                            <Header>
+                            ...
+                              <SegmentViewNode type="page" pagePath="subscripti...">
+                                <SegmentTrieNode>
+                                <ClientPageRoot Component={function SubscriptionPage} searchParams={{}} params={{}}>
+                                  <SubscriptionPage params={Promise} searchParams={Promise}>
+                           ...
+2026-02-12T23:33:32.269Z [console][error] A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+%s%s https://react.dev/link/hydration-mismatch 
+
+  ...
+    <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>
+      <HTTPAccessFallbackErrorBoundary pathname="/subscription" notFound={<NotAllowedRootHTTPFallbackError>} ...>
+        <RedirectBoundary>
+          <RedirectErrorBoundary router={{...}}>
+            <Head>
+            <__next_root_layout_boundary__>
+              <SegmentViewNode type="layout" pagePath="layout.tsx">
+                <SegmentTrieNode>
+                <link>
+                <script>
+                <script>
+                <script>
+                <RootLayout>
+                  <html lang="en" suppressHydrationWarning={true}>
+                    <head>
+                    <body className="font-body ..." suppressHydrationWarning={true}>
+                      <ThemeProvider>
+                        <SensorProvider>
+                          <div className="max-w-md m...">
+                            <Header>
+                            ...
+                              <SegmentViewNode type="page" pagePath="subscripti...">
+                                <SegmentTrieNode>
+                                <ClientPageRoot Component={function SubscriptionPage} searchParams={{}} params={{}}>
+                                  <SubscriptionPage params={Promise} searchParams={Promise}>
+                           ...
+2026-02-12T23:39:12.228Z [console][error] [Fast Refresh] performing full reload
+
+Fast Refresh will perform a full reload when you edit a file that's imported by modules outside of the React rendering tree.
+You might have a file which exports a React component but also exports a value that is imported by a non-React component file.
+Consider migrating the non-React component export to a separate file and importing it into both files.
+
+It is also possible the parent component of the component you edited is a class component, which disables Fast Refresh.
+Fast Refresh requires at least one parent function component in your React tree.
+2026-02-12T23:33:32.269Z [console][error] A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+%s%s https://react.dev/link/hydration-mismatch 
+
+  ...
+    <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>
+      <HTTPAccessFallbackErrorBoundary pathname="/subscription" notFound={<NotAllowedRootHTTPFallbackError>} ...>
+        <RedirectBoundary>
+          <RedirectErrorBoundary router={{...}}>
+            <Head>
+            <__next_root_layout_boundary__>
+              <SegmentViewNode type="layout" pagePath="layout.tsx">
+                <SegmentTrieNode>
+                <link>
+                <script>
+                <script>
+                <script>
+                <RootLayout>
+                  <html lang="en" suppressHydrationWarning={true}>
+                    <head>
+                    <body className="font-body ..." suppressHydrationWarning={true}>
+                      <ThemeProvider>
+                        <SensorProvider>
+                          <div className="max-w-md m...">
+                            <Header>
+                            ...
+                              <SegmentViewNode type="page" pagePath="subscripti...">
+                                <SegmentTrieNode>
+                                <ClientPageRoot Component={function SubscriptionPage} searchParams={{}} params={{}}>
+                                  <SubscriptionPage params={Promise} searchParams={Promise}>
+                           ...
+2026-02-12T23:39:12.228Z [console][error] [Fast Refresh] performing full reload
+
+Fast Refresh will perform a full reload when you edit a file that's imported by modules outside of the React rendering tree.
+You might have a file which exports a React component but also exports a value that is imported by a non-React component file.
+Consider migrating the non-React component export to a separate file and importing it into both files.
+
+It is also possible the parent component of the component you edited is a class component, which disables Fast Refresh.
+Fast Refresh requires at least one parent function component in your React tree.
+2026-02-12T23:33:32.269Z [console][error] A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+%s%s https://react.dev/link/hydration-mismatch 
+
+  ...
+    <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>
+      <HTTPAccessFallbackErrorBoundary pathname="/subscription" notFound={<NotAllowedRootHTTPFallbackError>} ...>
+        <RedirectBoundary>
+          <RedirectErrorBoundary router={{...}}>
+            <Head>
+            <__next_root_layout_boundary__>
+              <SegmentViewNode type="layout" pagePath="layout.tsx">
+                <SegmentTrieNode>
+                <link>
+                <script>
+                <script>
+                <script>
+                <RootLayout>
+                  <html lang="en" suppressHydrationWarning={true}>
+                    <head>
+                    <body className="font-body ..." suppressHydrationWarning={true}>
+                      <ThemeProvider>
+                        <SensorProvider>
+                          <div className="max-w-md m...">
+                            <Header>
+                            ...
+                              <SegmentViewNode type="page" pagePath="subscripti...">
+                                <SegmentTrieNode>
+                                <ClientPageRoot Component={function SubscriptionPage} searchParams={{}} params={{}}>
+                                  <SubscriptionPage params={Promise} searchParams={Promise}>
+                           ...
+2026-02-12T23:39:12.228Z [console][error] [Fast Refresh] performing full reload
+
+Fast Refresh will perform a full reload when you edit a file that's imported by modules outside of the React rendering tree.
+You might have a file which exports a React component but also exports a value that is imported by a non-React component file.
+Consider migrating the non-React component export to a separate file and importing it into both files.
+
+It is also possible the parent component of the component you edited is a class component, which disables Fast Refresh.
+Fast Refresh requires at least one parent function component in your React tree.
+2026-02-12T23:39:52.371Z [console][error] [Fast Refresh] performing full reload
+
+Fast Refresh will perform a full reload when you edit a file that's imported by modules outside of the React rendering tree.
+You might have a file which exports a React component but also exports a value that is imported by a non-React component file.
+Consider migrating the non-React component export to a separate file and importing it into both files.
+
+It is also possible the parent component of the component you edited is a class component, which disables Fast Refresh.
+Fast Refresh requires at least one parent function component in your React tree.
+2026-02-12T23:40:00.466Z [console][error] [Fast Refresh] performing full reload
+
+Fast Refresh will perform a full reload when you edit a file that's imported by modules outside of the React rendering tree.
+You might have a file which exports a React component but also exports a value that is imported by a non-React component file.
+Consider migrating the non-React component export to a separate file and importing it into both files.
+
+It is also possible the parent component of the component you edited is a class component, which disables Fast Refresh.
+Fast Refresh requires at least one parent function component in your React tree.
+2026-02-12T23:33:32.269Z [console][error] A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+%s%s https://react.dev/link/hydration-mismatch 
+
+  ...
+    <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>
+      <HTTPAccessFallbackErrorBoundary pathname="/subscription" notFound={<NotAllowedRootHTTPFallbackError>} ...>
+        <RedirectBoundary>
+          <RedirectErrorBoundary router={{...}}>
+            <Head>
+            <__next_root_layout_boundary__>
+              <SegmentViewNode type="layout" pagePath="layout.tsx">
+                <SegmentTrieNode>
+                <link>
+                <script>
+                <script>
+                <script>
+                <RootLayout>
+                  <html lang="en" suppressHydrationWarning={true}>
+                    <head>
+                    <body className="font-body ..." suppressHydrationWarning={true}>
+                      <ThemeProvider>
+                        <SensorProvider>
+                          <div className="max-w-md m...">
+                            <Header>
+                            ...
+                              <SegmentViewNode type="page" pagePath="subscripti...">
+                                <SegmentTrieNode>
+                                <ClientPageRoot Component={function SubscriptionPage} searchParams={{}} params={{}}>
+                                  <SubscriptionPage params={Promise} searchParams={Promise}>
+                           ...
+2026-02-12T23:40:22.363Z [console][error] [Fast Refresh] performing full reload
+
+Fast Refresh will perform a full reload when you edit a file that's imported by modules outside of the React rendering tree.
+You might have a file which exports a React component but also exports a value that is imported by a non-React component file.
+Consider migrating the non-React component export to a separate file and importing it into both files.
+
+It is also possible the parent component of the component you edited is a class component, which disables Fast Refresh.
+Fast Refresh requires at least one parent function component in your React tree.
+2026-02-12T23:40:32.011Z [console][error] [Fast Refresh] performing full reload
+
+Fast Refresh will perform a full reload when you edit a file that's imported by modules outside of the React rendering tree.
+You might have a file which exports a React component but also exports a value that is imported by a non-React component file.
+Consider migrating the non-React component export to a separate file and importing it into both files.
+
+It is also possible the parent component of the component you edited is a class component, which disables Fast Refresh.
+Fast Refresh requires at least one parent function component in your React tree.
+2026-02-12T23:33:32.269Z [console][error] A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+%s%s https://react.dev/link/hydration-mismatch 
+
+  ...
+    <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>
+      <HTTPAccessFallbackErrorBoundary pathname="/subscription" notFound={<NotAllowedRootHTTPFallbackError>} ...>
+        <RedirectBoundary>
+          <RedirectErrorBoundary router={{...}}>
+            <Head>
+            <__next_root_layout_boundary__>
+              <SegmentViewNode type="layout" pagePath="layout.tsx">
+                <SegmentTrieNode>
+                <link>
+                <script>
+                <script>
+                <script>
+                <RootLayout>
+                  <html lang="en" suppressHydrationWarning={true}>
+                    <head>
+                    <body className="font-body ..." suppressHydrationWarning={true}>
+                      <ThemeProvider>
+                        <SensorProvider>
+                          <div className="max-w-md m...">
+                            <Header>
+                            ...
+                              <SegmentViewNode type="page" pagePath="subscripti...">
+                                <SegmentTrieNode>
+                                <ClientPageRoot Component={function SubscriptionPage} searchParams={{}} params={{}}>
+                                  <SubscriptionPage params={Promise} searchParams={Promise}>
+                           ...
+2026-02-12T23:44:09.190Z [console][error] A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+%s%s https://react.dev/link/hydration-mismatch 
+
+  ...
+    <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>
+      <HTTPAccessFallbackErrorBoundary pathname="/advisor" notFound={<NotAllowedRootHTTPFallbackError>} ...>
+        <RedirectBoundary>
+          <RedirectErrorBoundary router={{...}}>
+            <Head>
+            <__next_root_layout_boundary__>
+              <SegmentViewNode type="layout" pagePath="layout.tsx">
+                <SegmentTrieNode>
+                <link>
+                <script>
+                <script>
+                <script>
+                <RootLayout>
+                  <html lang="en" suppressHydrationWarning={true}>
+                    <head>
+                    <body className="font-body ..." suppressHydrationWarning={true}>
+                      <ThemeProvider>
+                        <SensorProvider>
+                          <div className="max-w-md m...">
+                            <Header>
+                            <main>
+                            <Navigation>
+                              <nav
+                                className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-card/90 backdrop-blur-xl ..."
+-                               data-orchid-ref="ref-sd79i78ub9"
+                              >
+                                <LinkComponent href="/" className="flex flex-....
