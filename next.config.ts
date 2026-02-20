@@ -7,6 +7,7 @@ const withPWA = withPWAInit({
   register: true,
   // skipWaiting: true, // Commented out due to type error
   sw: 'sw.js',
+  customWorkerSrc: 'public/custom-sw.js',
   scope: '/',
 });
 

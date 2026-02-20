@@ -5,9 +5,11 @@ import { ShieldCheck, Cloud, FileText, Landmark, Settings, ChevronRight, Crown, 
 import Link from 'next/link';
 import { useSensors } from '@/context/SensorContext';
 import { cn } from '@/lib/utils';
+import { useToast } from '@/hooks/use-toast';
 
 export default function MoreHub() {
   const { t } = useSensors();
+  const { toast } = useToast();
 
   const services = [
     {
@@ -105,17 +107,26 @@ export default function MoreHub() {
       <section className="bg-primary/5 rounded-[2rem] p-6 border border-primary/10">
         <h3 className="text-xs font-black text-primary uppercase tracking-widest mb-3">Resources</h3>
         <ul className="space-y-4">
-          <li className="flex items-center justify-between text-xs font-bold text-muted-foreground">
+          <li
+            onClick={() => toast({ title: "Market Holidays", description: "All APMC markets are closed this Sunday.", duration: 3000 })}
+            className="flex items-center justify-between text-xs font-bold text-muted-foreground cursor-pointer active:scale-95 transition-transform"
+          >
             <span>Market Holidays</span>
-            <span className="text-primary">View</span>
+            <span className="text-primary bg-primary/10 px-3 py-1 rounded-full">View</span>
           </li>
-          <li className="flex items-center justify-between text-xs font-bold text-muted-foreground">
-            <span>Expert Contacts</span>
-            <span className="text-primary">Call</span>
+          <li
+            onClick={() => window.open('tel:1551')}
+            className="flex items-center justify-between text-xs font-bold text-muted-foreground cursor-pointer active:scale-95 transition-transform"
+          >
+            <span>Kisan Call Center</span>
+            <span className="text-primary bg-primary/10 px-3 py-1 rounded-full">Call 1551</span>
           </li>
-          <li className="flex items-center justify-between text-xs font-bold text-muted-foreground">
+          <li
+            onClick={() => toast({ title: "App Manual", description: "Downloading offline manual PDF...", duration: 2000 })}
+            className="flex items-center justify-between text-xs font-bold text-muted-foreground cursor-pointer active:scale-95 transition-transform"
+          >
             <span>App Manual</span>
-            <span className="text-primary">Read</span>
+            <span className="text-primary bg-primary/10 px-3 py-1 rounded-full">Read</span>
           </li>
         </ul>
       </section>

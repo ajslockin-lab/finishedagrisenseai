@@ -3,15 +3,24 @@
   "short_name": "AgriSense",
   "description": "Precision agricultural technology for small farmers in India",
   "start_url": "/",
+  "id": "/",
   "display": "standalone",
-  "background_color": "#f8fcf9",
-  "theme_color": "#386641",
+  "display_override": [
+    "window-controls-overlay",
+    "minimal-ui",
+    "browser"
+  ],
+  "background_color": "#062016",
+  "theme_color": "#0a3d2a",
   "orientation": "portrait-primary",
   "categories": [
     "agriculture",
     "productivity",
-    "utilities"
+    "utilities",
+    "education"
   ],
+  "dir": "ltr",
+  "lang": "en-IN",
   "icons": [
     {
       "src": "/icons/icon-72x72.png",
@@ -65,7 +74,13 @@
       "src": "/icons/icon-512x512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512x512-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ],
   "shortcuts": [
@@ -92,6 +107,18 @@
           "sizes": "96x96"
         }
       ]
+    },
+    {
+      "name": "Crop Diagnosis",
+      "short_name": "Diagnosis",
+      "description": "Scan your crops for diseases",
+      "url": "/diagnosis",
+      "icons": [
+        {
+          "src": "/icons/icon-96x96.png",
+          "sizes": "96x96"
+        }
+      ]
     }
   ],
   "screenshots": [
@@ -99,7 +126,32 @@
       "src": "/icons/icon-512x512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "form_factor": "narrow"
+      "form_factor": "narrow",
+      "label": "AgriSense AI Dashboard"
+    }
+  ],
+  "share_target": {
+    "action": "/journal",
+    "method": "GET",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url"
+    }
+  },
+  "note_taking": {
+    "new_note_url": "/journal?new=true"
+  },
+  "launch_handler": {
+    "client_mode": "navigate-existing"
+  },
+  "edge_side_panel": {
+    "preferred_width": 400
+  },
+  "protocol_handlers": [
+    {
+      "protocol": "web+agrisense",
+      "url": "/?q=%s"
     }
   ]
 }

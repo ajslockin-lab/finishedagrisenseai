@@ -20,6 +20,20 @@ export default function HomeDashboard() {
     setMounted(true);
   }, []);
 
+  // Simulate Smart Valve increasing moisture
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (irrigationOn) {
+      interval = setInterval(() => {
+        // Increase moisture by 1% every 3 seconds while valve is on (up to 95%)
+        if (sensors.soilMoisture < 95) {
+          sensors.soilMoisture = Math.min(95, sensors.soilMoisture + 1);
+        }
+      }, 3000);
+    }
+    return () => clearInterval(interval);
+  }, [irrigationOn, sensors]);
+
   const calculateHealthScore = () => {
     let score = 100;
     if (sensors.soilMoisture < 60 || sensors.soilMoisture > 85) score -= 15;
@@ -62,7 +76,7 @@ export default function HomeDashboard() {
               <span className="text-[10px] font-black uppercase tracking-widest">Premium Care</span>
             </div>
           </div>
-          
+
           <div className="flex items-center gap-6">
             <div className="relative">
               <div className="absolute inset-0 bg-white/20 rounded-full blur-xl animate-pulse" />
@@ -73,9 +87,9 @@ export default function HomeDashboard() {
             </div>
             <div className="flex-1 space-y-2">
               <div className="h-2 w-full bg-white/20 rounded-full overflow-hidden">
-                <div 
-                  className="h-full bg-white rounded-full transition-all duration-1000 ease-out" 
-                  style={{ width: `${healthScore}%` }} 
+                <div
+                  className="h-full bg-white rounded-full transition-all duration-1000 ease-out"
+                  style={{ width: `${healthScore}%` }}
                 />
               </div>
               <p className="text-xs font-bold opacity-90 leading-relaxed">
@@ -84,7 +98,7 @@ export default function HomeDashboard() {
             </div>
           </div>
         </div>
-        
+
         <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/5 rounded-full blur-3xl group-hover:bg-white/10 transition-colors" />
         <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-accent/10 rounded-full blur-3xl" />
       </section>
@@ -130,9 +144,9 @@ export default function HomeDashboard() {
                   </span>
                   <span className="text-xs font-bold text-muted-foreground uppercase">{sensor.unit}</span>
                 </div>
-                <Progress 
-                  value={typeof sensor.val === 'number' ? (sensor.val / (sensor.key === 'dashboard_temp' ? 40 : sensor.key === 'dashboard_ph' ? 14 : 100)) * 100 : 85} 
-                  className="h-1.5 bg-muted/50" 
+                <Progress
+                  value={typeof sensor.val === 'number' ? (sensor.val / (sensor.key === 'dashboard_temp' ? 40 : sensor.key === 'dashboard_ph' ? 14 : 100)) * 100 : 85}
+                  className="h-1.5 bg-muted/50"
                 />
               </div>
               <p className="text-[9px] font-black text-muted-foreground/60 tracking-wider">RANGE: {sensor.optimal}</p>
@@ -176,8 +190,12 @@ export default function HomeDashboard() {
               <Zap className={cn("w-6 h-6", irrigationOn ? "text-white animate-pulse" : "text-muted-foreground")} />
             </div>
             <p className="text-[10px] font-black uppercase tracking-widest">{t('dashboard_smart_valve')}</p>
-            <button 
-              onClick={() => setIrrigationOn(!irrigationOn)}
+            <button
+              onClick={() => {
+                const newState = !irrigationOn;
+                setIrrigationOn(newState);
+                // Optional: show a quick toast if a toast function was available
+              }}
               className={cn(
                 "px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest transition-all",
                 irrigationOn ? "bg-blue-500/20 text-blue-600" : "bg-muted/50 text-muted-foreground"

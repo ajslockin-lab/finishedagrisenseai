@@ -53,8 +53,8 @@ const svgLogo = `
     </filter>
   </defs>
 
-  <!-- Background rounded rectangle -->
-  <rect x="16" y="16" width="480" height="480" rx="96" ry="96" fill="url(#bgGrad)"/>
+  <!-- Background rounded rectangle (Optional for standard icons, kept for design) -->
+  <rect x="0" y="0" width="512" height="512" rx="112" ry="112" fill="url(#bgGrad)"/>
 
   <!-- Circuit board traces in background -->
   <g stroke="#1a6b45" stroke-width="2" fill="none" opacity="0.5">
@@ -187,65 +187,90 @@ const svgLogo = `
 `;
 
 async function generateAllIcons() {
-    const svgBuffer = Buffer.from(svgLogo);
+  const svgBuffer = Buffer.from(svgLogo);
 
-    // Generate main logo
+  // Generate main logo
+  await sharp(svgBuffer)
+    .resize(512, 512)
+    .png({ quality: 100 })
+    .toFile(join(publicDir, 'logo.png'));
+  console.log('Created logo.png (512x512)');
+
+  // Header logo
+  await sharp(svgBuffer)
+    .resize(80, 80)
+    .png({ quality: 100 })
+    .toFile(join(publicDir, 'header-logo.png'));
+  console.log('Created header-logo.png (80x80)');
+
+  // Favicon
+  await sharp(svgBuffer)
+    .resize(32, 32)
+    .png({ quality: 100 })
+    .toFile(join(publicDir, 'favicon.png'));
+  console.log('Created favicon.png');
+
+  // Apple touch icon
+  await sharp(svgBuffer)
+    .resize(180, 180)
+    .png({ quality: 100 })
+    .toFile(join(publicDir, 'apple-touch-icon.png'));
+  console.log('Created apple-touch-icon.png');
+
+  // PWA icons
+  const sizes = [72, 96, 128, 144, 152, 192, 384, 512];
+  for (const size of sizes) {
     await sharp(svgBuffer)
-        .resize(512, 512)
-        .png({ quality: 100 })
-        .toFile(join(publicDir, 'logo.png'));
-    console.log('Created logo.png (512x512)');
+      .resize(size, size)
+      .png({ quality: 100 })
+      .toFile(join(iconsDir, `icon-${size}x${size}.png`));
+    console.log(`Created icon-${size}x${size}.png`);
+  }
 
-    // Header logo
-    await sharp(svgBuffer)
-        .resize(80, 80)
-        .png({ quality: 100 })
-        .toFile(join(publicDir, 'header-logo.png'));
-    console.log('Created header-logo.png (80x80)');
+  // Maskable icon with padding
+  const maskableSize = 192;
+  // For maskable, we must ensure it fills the square completely with background color
+  const maskableSvg = svgLogo.replace(
+    '<rect x="0" y="0" width="512" height="512" rx="112" ry="112" fill="url(#bgGrad)"/>',
+    '<rect x="0" y="0" width="512" height="512" fill="url(#bgGrad)"/>'
+  );
+  const maskableBuffer = Buffer.from(maskableSvg);
 
-    // Favicon
-    await sharp(svgBuffer)
-        .resize(32, 32)
-        .png({ quality: 100 })
-        .toFile(join(publicDir, 'favicon.png'));
-    console.log('Created favicon.png');
+  const padding = Math.round(maskableSize * 0.15); // 15% padding
+  const innerSize = maskableSize - (padding * 2);
 
-    // Apple touch icon
-    await sharp(svgBuffer)
-        .resize(180, 180)
-        .png({ quality: 100 })
-        .toFile(join(publicDir, 'apple-touch-icon.png'));
-    console.log('Created apple-touch-icon.png');
+  await sharp(maskableBuffer)
+    .resize(innerSize, innerSize)
+    .extend({
+      top: padding,
+      bottom: padding,
+      left: padding,
+      right: padding,
+      background: { r: 6, g: 32, b: 22, alpha: 255 } // Match dark background
+    })
+    .png({ quality: 100 })
+    .toFile(join(iconsDir, `icon-${maskableSize}x${maskableSize}-maskable.png`));
 
-    // PWA icons
-    const sizes = [72, 96, 128, 144, 152, 192, 384, 512];
-    for (const size of sizes) {
-        await sharp(svgBuffer)
-            .resize(size, size)
-            .png({ quality: 100 })
-            .toFile(join(iconsDir, `icon-${size}x${size}.png`));
-        console.log(`Created icon-${size}x${size}.png`);
-    }
+  // Also a 512 maskable for Play Store / Manifest
+  const maskableSizeLarge = 512;
+  const paddingLarge = Math.round(maskableSizeLarge * 0.15);
+  const innerSizeLarge = maskableSizeLarge - (paddingLarge * 2);
 
-    // Maskable icon with padding
-    const maskableSize = 192;
-    const padding = Math.round(maskableSize * 0.1);
-    const innerSize = maskableSize - (padding * 2);
+  await sharp(maskableBuffer)
+    .resize(innerSizeLarge, innerSizeLarge)
+    .extend({
+      top: paddingLarge,
+      bottom: paddingLarge,
+      left: paddingLarge,
+      right: paddingLarge,
+      background: { r: 6, g: 32, b: 22, alpha: 255 }
+    })
+    .png({ quality: 100 })
+    .toFile(join(iconsDir, `icon-${maskableSizeLarge}x${maskableSizeLarge}-maskable.png`));
 
-    await sharp(svgBuffer)
-        .resize(innerSize, innerSize)
-        .extend({
-            top: padding,
-            bottom: padding,
-            left: padding,
-            right: padding,
-            background: { r: 10, g: 61, b: 42, alpha: 255 }
-        })
-        .png({ quality: 100 })
-        .toFile(join(iconsDir, `icon-${maskableSize}x${maskableSize}-maskable.png`));
-    console.log('Created maskable icon');
+  console.log('Created maskable icons');
 
-    console.log('\n✅ All icons generated successfully!');
+  console.log('\n✅ All icons generated successfully!');
 }
 
 generateAllIcons().catch(console.error);

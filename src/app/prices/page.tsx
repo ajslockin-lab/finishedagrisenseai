@@ -87,13 +87,13 @@ export default function MarketPrices() {
 
           {/* Summary Boxes */}
           <div className="grid grid-cols-2 gap-3">
-            <div className="bg-green-50 border border-green-100 p-3 rounded-xl flex flex-col items-center justify-center text-center space-y-1">
-              <span className="text-2xl font-black text-green-600">{boomingCount}</span>
-              <span className="text-xs font-bold text-green-800 uppercase tracking-wide">🚀 Booming Crops</span>
+            <div className="bg-green-50 dark:bg-green-950/40 border border-green-100 dark:border-green-900/50 p-3 rounded-xl flex flex-col items-center justify-center text-center space-y-1">
+              <span className="text-2xl font-black text-green-600 dark:text-green-500">{boomingCount}</span>
+              <span className="text-xs font-bold text-green-800 dark:text-green-400 uppercase tracking-wide">🚀 Booming Crops</span>
             </div>
-            <div className="bg-red-50 border border-red-100 p-3 rounded-xl flex flex-col items-center justify-center text-center space-y-1">
-              <span className="text-2xl font-black text-red-600">{decliningCount}</span>
-              <span className="text-xs font-bold text-red-800 uppercase tracking-wide">📉 Declining Crops</span>
+            <div className="bg-red-50 dark:bg-red-950/40 border border-red-100 dark:border-red-900/50 p-3 rounded-xl flex flex-col items-center justify-center text-center space-y-1">
+              <span className="text-2xl font-black text-red-600 dark:text-red-500">{decliningCount}</span>
+              <span className="text-xs font-bold text-red-800 dark:text-red-400 uppercase tracking-wide">📉 Declining Crops</span>
             </div>
           </div>
 
@@ -112,9 +112,9 @@ export default function MarketPrices() {
                       <p className="text-xs text-muted-foreground">Current: {crop.price}/q</p>
                     </div>
                   </div>
-                  <Badge variant="outline" className={`flex items-center gap-1 font-bold ${crop.status === 'booming' ? 'bg-green-50 text-green-700 border-green-200' :
-                    crop.status === 'declining' ? 'bg-red-50 text-red-700 border-red-200' :
-                      'bg-yellow-50 text-yellow-700 border-yellow-200'
+                  <Badge variant="outline" className={`flex items-center gap-1 font-bold ${crop.status === 'booming' ? 'bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800' :
+                    crop.status === 'declining' ? 'bg-red-50 text-red-700 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800' :
+                      'bg-yellow-50 text-yellow-700 border-yellow-200 dark:bg-yellow-900/20 dark:text-yellow-400 dark:border-yellow-800'
                     }`}>
                     {crop.status === 'booming' ? <TrendingUp className="w-3 h-3" /> :
                       crop.status === 'declining' ? <TrendingDown className="w-3 h-3" /> :
@@ -130,7 +130,7 @@ export default function MarketPrices() {
         {/* --- TAB 2: LOCAL PRICES (Existing Logic) --- */}
         <TabsContent value="prices" className="space-y-6 animate-in fade-in-50 slide-in-from-bottom-2">
 
-          <div className="flex items-center gap-2 bg-white px-3 py-2 rounded-full border shadow-sm w-fit mx-auto">
+          <div className="flex items-center gap-2 bg-white dark:bg-card px-3 py-2 rounded-full border border-border/50 shadow-sm w-fit mx-auto">
             <MapPin className="w-3 h-3 text-primary" />
             <span className="text-[10px] font-bold text-muted-foreground">Mandi prices — {settings.location}</span>
           </div>
@@ -197,28 +197,28 @@ export default function MarketPrices() {
           <div className="space-y-3">
             <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-widest pl-1">Best Opportunities</h3>
 
-            <div className="p-4 rounded-xl bg-orange-50 border border-orange-100 space-y-2">
+            <div className="p-4 rounded-xl bg-orange-50 dark:bg-orange-950/30 border border-orange-100 dark:border-orange-900/50 space-y-2">
               <div className="flex items-center gap-2">
-                <Sprout className="w-5 h-5 text-orange-600" />
-                <h4 className="font-bold text-orange-800">Switch to Maize</h4>
+                <Sprout className="w-5 h-5 text-orange-600 dark:text-orange-500" />
+                <h4 className="font-bold text-orange-800 dark:text-orange-400">Switch to Maize</h4>
               </div>
-              <p className="text-xs text-orange-900/70 leading-relaxed">
+              <p className="text-xs text-orange-900/70 dark:text-orange-200/70 leading-relaxed">
                 Wheat prices are stabilizing, but Maize demand is projected to rise by 15% next month due to poultry feed shortages.
               </p>
-              <Badge variant="secondary" className="bg-white/50 text-orange-800 border-orange-200">
+              <Badge variant="secondary" className="bg-white/50 dark:bg-black/20 text-orange-800 dark:text-orange-400 border-orange-200 dark:border-orange-800">
                 Potential +₹4,500/acre
               </Badge>
             </div>
 
-            <div className="p-4 rounded-xl bg-blue-50 border border-blue-100 space-y-2">
+            <div className="p-4 rounded-xl bg-blue-50 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900/50 space-y-2">
               <div className="flex items-center gap-2">
-                <Coins className="w-5 h-5 text-blue-600" />
-                <h4 className="font-bold text-blue-800">Hold Your Cotton</h4>
+                <Coins className="w-5 h-5 text-blue-600 dark:text-blue-500" />
+                <h4 className="font-bold text-blue-800 dark:text-blue-400">Hold Your Cotton</h4>
               </div>
-              <p className="text-xs text-blue-900/70 leading-relaxed">
+              <p className="text-xs text-blue-900/70 dark:text-blue-200/70 leading-relaxed">
                 Global cotton supply is tight. Holding your stock for another 2 weeks could yield better returns.
               </p>
-              <Badge variant="secondary" className="bg-white/50 text-blue-800 border-blue-200">
+              <Badge variant="secondary" className="bg-white/50 dark:bg-black/20 text-blue-800 dark:text-blue-400 border-blue-200 dark:border-blue-800">
                 Projected +8% Value
               </Badge>
             </div>

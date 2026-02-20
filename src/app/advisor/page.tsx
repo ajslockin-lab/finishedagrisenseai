@@ -49,6 +49,19 @@ export default function AIAdvisor() {
   }, []);
   const handleRefreshRecs = async () => {
     setLoadingRecs(true);
+
+    // OFFLINE FALLBACK
+    if (typeof window !== 'undefined' && !window.navigator.onLine) {
+      setTimeout(() => {
+        setRecommendations([
+          { title: 'Offline Mode: Water Crops', action: 'Your device is offline. Remember to irrigate if moisture feels low.', priority: 'Medium', icon: '💧' },
+          { title: 'Offline Mode: Pest Check', action: 'Inspect lower leaves for aphids during dry spells.', priority: 'Low', icon: '🔎' }
+        ]);
+        setLoadingRecs(false);
+      }, 500);
+      return;
+    }
+
     try {
       const result = await getPersonalizedRecommendations({
         soilMoisture: sensors.soilMoisture,
@@ -63,6 +76,8 @@ export default function AIAdvisor() {
       setRecommendations(result);
     } catch (error) {
       console.error('Error generating recommendations:', error);
+      // Failsafe Mock if API fails while technically "online"
+      setRecommendations([{ title: 'Demo Mode Active', action: 'The AI service is currently unavailable. Ensure your API key is configured or you are connected to the internet.', priority: 'Medium', icon: '⚡' }]);
     } finally {
       setLoadingRecs(false);
     }
@@ -75,6 +90,14 @@ export default function AIAdvisor() {
     setInputValue('');
     setIsTyping(true);
 
+    if (typeof window !== 'undefined' && !window.navigator.onLine) {
+      setTimeout(() => {
+        setChatMessages(prev => [...prev, { role: 'bot', text: "(Offline Demo) I cannot reach the cloud right now, but I recommend checking your local agricultural extension office for immediate inquiries." }]);
+        setIsTyping(false);
+      }, 800);
+      return;
+    }
+
     try {
       const response = await askFarmingQuestion({
         question: userMsg,
@@ -85,7 +108,7 @@ export default function AIAdvisor() {
       console.error('Chat error:', error);
       setChatMessages(prev => [...prev, {
         role: 'bot',
-        text: "I'm having a little trouble connecting. Please try again."
+        text: "(Demo) It looks like my AI backend is unavailable or missing an API key. Please check your connection or configuration."
       }]);
     } finally {
       setIsTyping(false);
