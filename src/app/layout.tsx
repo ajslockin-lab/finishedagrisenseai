@@ -5,7 +5,8 @@ import { Header } from '@/components/Header';
 import { Toaster } from '@/components/ui/toaster';
 import { SensorProvider } from '@/context/SensorContext';
 import { ThemeProvider } from '@/context/ThemeContext';
-import { PWAInstallPrompt } from '@/components/PWAInstallPrompt';
+import { NotificationProvider } from '@/context/NotificationContext';
+import Script from 'next/script';
 
 export const metadata: Metadata = {
   title: 'AgriSense AI',
@@ -14,22 +15,9 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
-    title: 'AgriSense',
+    title: 'AgriSense AI',
   },
-  formatDetection: {
-    telephone: false,
-  },
-  openGraph: {
-    type: 'website',
-    siteName: 'AgriSense AI',
-    title: 'AgriSense AI India',
-    description: 'Smart farming assistant for Indian farmers',
-  },
-  twitter: {
-    card: 'summary',
-    title: 'AgriSense AI India',
-    description: 'Smart farming assistant for Indian farmers',
-  },
+  themeColor: '#1B4D2E',
 };
 
 export default function RootLayout({
@@ -43,35 +31,42 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=PT+Sans:wght@400;700&display=swap" rel="stylesheet" />
-        <link rel="icon" href="/logo.svg" type="image/svg+xml" />
         <link rel="manifest" href="/manifest.json" />
-        <meta name="theme-color" content="#f8fcf9" />
-        <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#060f08" />
-        <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
+        <link rel="apple-touch-icon" href="/icon-192.svg" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-        <meta name="apple-mobile-web-app-title" content="AgriSense" />
-        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, viewport-fit=cover" />
-          <script
-            dangerouslySetInnerHTML={{
-              __html: `(function(){try{var t=localStorage.getItem('agrisense_theme');if(t==='dark'||(!t&&window.matchMedia('(prefers-color-scheme:dark)').matches)){document.documentElement.classList.add('dark')}}catch(e){}})()`,
-            }}
-          />
-        </head>
-        <body className="font-body antialiased bg-background text-foreground pb-20" suppressHydrationWarning>
+        <meta name="theme-color" content="#1B4D2E" />
+        <link
+          rel="icon"
+          href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231B4D2E'/%3E%3Cpath d='M46 14C28 16 16 28 13 42c11-5 20-14 25-26-4 14-13 25-25 33' stroke='%23F0E68C' stroke-width='4' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"
+        />
+      </head>
+      <body className="font-body antialiased bg-background text-foreground pb-20" suppressHydrationWarning>
         <ThemeProvider>
           <SensorProvider>
-            <div className="max-w-md mx-auto min-h-screen shadow-2xl bg-background relative flex flex-col border-x border-border/40">
-              <Header />
-              <main className="flex-1 px-4 py-4 space-y-6 overflow-x-hidden">
-                {children}
-              </main>
-              <Navigation />
-            </div>
-            <Toaster />
-            <PWAInstallPrompt />
+            <NotificationProvider>
+              <div className="max-w-md mx-auto min-h-screen shadow-2xl bg-background relative flex flex-col border-x border-border/40">
+                <Header />
+                <main className="flex-1 px-4 py-4 space-y-6 overflow-x-hidden">
+                  {children}
+                </main>
+                <Navigation />
+              </div>
+              <Toaster />
+            </NotificationProvider>
           </SensorProvider>
         </ThemeProvider>
+
+        {/* Register Service Worker */}
+        <Script id="sw-register" strategy="afterInteractive">{`
+          if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+              navigator.serviceWorker.register('/sw.js')
+                .then(reg => console.log('[SW] Registered:', reg.scope))
+                .catch(err => console.warn('[SW] Registration failed:', err));
+            });
+          }
+        `}</Script>
       </body>
     </html>
   );

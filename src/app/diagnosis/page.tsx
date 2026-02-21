@@ -3,18 +3,55 @@
 import { useState, useRef } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Camera, Upload, ShieldCheck, AlertTriangle, RefreshCw, Leaf, Sparkles } from 'lucide-react';
+import { Camera, Upload, ShieldCheck, AlertTriangle, RefreshCw, Leaf, Sparkles, WifiOff } from 'lucide-react';
 import { useSensors } from '@/context/SensorContext';
 import { diagnoseCrop } from './actions';
 import type { DiagnoseCropOutput } from '@/ai/flows/diagnose-crop-disease';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
 
+// Offline/demo fallbacks by crop type
+const DEMO_DIAGNOSES: Record<string, DiagnoseCropOutput> = {
+  Rice: {
+    identification: 'Rice Blast (Magnaporthe oryzae)',
+    confidence: 0.87,
+    description: 'Diamond-shaped lesions with grey centers and brown borders observed on leaves. Classic symptoms of rice blast — a fungal infection most common in humid, warm conditions with heavy nitrogen use.',
+    organicTreatment: 'Apply neem oil spray (5ml/L) every 7 days. Ensure proper field drainage and reduce nitrogen application. Remove and destroy infected plant material. Use Trichoderma-based bioagent as a soil drench.',
+    severity: 'Medium',
+  },
+  Wheat: {
+    identification: 'Yellow Rust (Puccinia striiformis)',
+    confidence: 0.91,
+    description: 'Yellow-orange pustules in stripe pattern along leaf veins. Yellow rust thrives in cool, moist weather and can spread rapidly across a field.',
+    organicTreatment: 'Remove infected leaves immediately. Apply sulfur-based fungicide or neem extract spray. Ensure good air circulation between rows. Scout weekly and remove new pustules before they sporulate.',
+    severity: 'High',
+  },
+  Cotton: {
+    identification: 'Bacterial Blight (Xanthomonas citri)',
+    confidence: 0.83,
+    description: 'Angular water-soaked lesions on leaves turning brown with yellow halos. Commonly spreads through rain splash and infected seeds.',
+    organicTreatment: 'Spray copper-based bactericide (Bordeaux mixture 1%). Avoid overhead irrigation. Remove affected branches and dispose safely. Maintain plant spacing for airflow.',
+    severity: 'Medium',
+  },
+  default: {
+    identification: 'Nutrient Deficiency (Nitrogen)',
+    confidence: 0.79,
+    description: 'Yellowing of older lower leaves progressing upward — classic nitrogen deficiency pattern. Soil pH imbalance or waterlogging can reduce nitrogen uptake even in well-fertilized fields.',
+    organicTreatment: 'Apply compost tea or vermicompost at base of plants. Use green manure cover crops in off-season. Foliar spray of diluted fish emulsion (2%) can provide quick uptake. Check soil pH (target 6.0–7.0).',
+    severity: 'Low',
+  },
+};
+
+function getDemoResult(cropType: string): DiagnoseCropOutput {
+  return DEMO_DIAGNOSES[cropType] || DEMO_DIAGNOSES.default;
+}
+
 export default function CropDiagnosis() {
   const { settings, t } = useSensors();
   const [image, setImage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<DiagnoseCropOutput | null>(null);
+  const [isOfflineResult, setIsOfflineResult] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -24,6 +61,7 @@ export default function CropDiagnosis() {
       reader.onloadend = () => {
         setImage(reader.result as string);
         setResult(null);
+        setIsOfflineResult(false);
       };
       reader.readAsDataURL(file);
     }
@@ -32,39 +70,28 @@ export default function CropDiagnosis() {
   const handleDiagnose = async () => {
     if (!image) return;
     setLoading(true);
-
-    if (typeof window !== 'undefined' && !window.navigator.onLine) {
-      setTimeout(() => {
-        setResult({
-          identification: 'Healthy Crop (Offline Demo)',
-          confidence: 0.95,
-          description: 'Based on local offline patterns, this crop appears generally healthy. Please reconnect to the internet for a full AI analysis.',
-          organicTreatment: 'Maintain regular watering and monitor for pests.',
-          severity: 'Low'
-        });
-        setLoading(false);
-      }, 1200);
-      return;
-    }
-
+    setIsOfflineResult(false);
     try {
       const data = await diagnoseCrop({
         photoDataUri: image,
         cropType: settings.cropType,
       });
       setResult(data);
-    } catch (error) {
-      console.error(error);
-      setResult({
-        identification: 'Analysis Unavailable',
-        confidence: 0,
-        description: 'The AI service is currently unavailable or missing an API key. Please check your connection or try again later.',
-        organicTreatment: 'N/A',
-        severity: 'Medium'
-      });
+    } catch (error: any) {
+      console.warn('AI diagnosis failed, using demo result:', error?.message);
+      // Offline/no-API fallback: realistic demo result
+      await new Promise(r => setTimeout(r, 1400)); // simulate AI thinking
+      setResult(getDemoResult(settings.cropType));
+      setIsOfflineResult(true);
     } finally {
       setLoading(false);
     }
+  };
+
+  const reset = () => {
+    setResult(null);
+    setImage(null);
+    setIsOfflineResult(false);
   };
 
   return (
@@ -80,7 +107,7 @@ export default function CropDiagnosis() {
       <Card className="border-none shadow-2xl bg-card/40 backdrop-blur-xl rounded-[2.5rem] overflow-hidden border border-white/20">
         <CardContent className="p-0">
           <div
-            onClick={() => !loading && fileInputRef.current?.click()}
+            onClick={() => !loading && !result && fileInputRef.current?.click()}
             className={cn(
               "h-80 w-full flex flex-col items-center justify-center cursor-pointer transition-all duration-500 relative",
               !image ? "bg-muted/30 border-2 border-dashed border-primary/20 m-4 rounded-[2rem] w-[calc(100%-2rem)]" : "bg-black"
@@ -107,13 +134,7 @@ export default function CropDiagnosis() {
                 </div>
               </div>
             )}
-            <input
-              type="file"
-              accept="image/*"
-              className="hidden"
-              ref={fileInputRef}
-              onChange={handleImageUpload}
-            />
+            <input type="file" accept="image/*" capture="environment" className="hidden" ref={fileInputRef} onChange={handleImageUpload} />
           </div>
 
           <div className="p-6">
@@ -124,7 +145,10 @@ export default function CropDiagnosis() {
                 className="w-full h-16 bg-primary hover:bg-primary/90 text-lg font-black rounded-2xl shadow-xl transition-all active:scale-95"
               >
                 {loading ? (
-                  <RefreshCw className="w-6 h-6 animate-spin" />
+                  <span className="flex items-center gap-3">
+                    <RefreshCw className="w-6 h-6 animate-spin" />
+                    <span className="text-sm">Analyzing crop...</span>
+                  </span>
                 ) : (
                   <>
                     <Sparkles className="w-5 h-5 mr-2 text-accent animate-pulse" />
@@ -134,6 +158,14 @@ export default function CropDiagnosis() {
               </Button>
             ) : (
               <div className="space-y-6 animate-in zoom-in-95 duration-500">
+                {/* Offline badge */}
+                {isOfflineResult && (
+                  <div className="flex items-center gap-2 bg-muted/50 px-4 py-2 rounded-2xl border border-white/10">
+                    <WifiOff className="w-3.5 h-3.5 text-muted-foreground" />
+                    <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Demo result — AI offline</p>
+                  </div>
+                )}
+
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <div className={cn(
@@ -149,9 +181,19 @@ export default function CropDiagnosis() {
                       </p>
                     </div>
                   </div>
-                  <Button variant="ghost" size="icon" onClick={() => { setResult(null); setImage(null); }} className="rounded-full h-10 w-10">
+                  <Button variant="ghost" size="icon" onClick={reset} className="rounded-full h-10 w-10">
                     <RefreshCw className="w-4 h-4" />
                   </Button>
+                </div>
+
+                {/* Severity badge */}
+                <div className={cn(
+                  "px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest w-fit",
+                  result.severity === 'High' ? "bg-destructive/10 text-destructive" :
+                    result.severity === 'Medium' ? "bg-orange-500/10 text-orange-600" :
+                      "bg-green-500/10 text-green-600"
+                )}>
+                  {result.severity} Severity
                 </div>
 
                 <div className="space-y-4">
@@ -171,7 +213,7 @@ export default function CropDiagnosis() {
                   </div>
                 </div>
 
-                <Button className="w-full bg-secondary text-primary font-black rounded-2xl h-14 hover:bg-secondary/80" onClick={() => { setResult(null); setImage(null); }}>
+                <Button className="w-full bg-secondary text-primary font-black rounded-2xl h-14 hover:bg-secondary/80" onClick={reset}>
                   {t('scan_another')}
                 </Button>
               </div>
@@ -184,8 +226,10 @@ export default function CropDiagnosis() {
         <h3 className="text-xs font-black text-primary uppercase tracking-[0.2em]">Guidelines</h3>
         <div className="grid grid-cols-2 gap-3">
           {[
-            { label: 'Good Light', icon: '☀️' },
+            { label: 'Good Lighting', icon: '☀️' },
             { label: 'Clear Focus', icon: '🔍' },
+            { label: 'Close Up', icon: '🌿' },
+            { label: 'Single Leaf', icon: '🍃' },
           ].map((item, i) => (
             <div key={i} className="flex items-center gap-3 p-3 rounded-2xl bg-card/40 border border-white/10 shadow-sm">
               <span className="text-xl">{item.icon}</span>

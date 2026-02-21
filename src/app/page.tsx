@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { Droplets, Thermometer, Beaker, Leaf, CheckCircle2, Circle, Star, Sparkles, ShieldCheck, Zap, AlertCircle, TrendingUp, Timer } from 'lucide-react';
+import { Droplets, Thermometer, Beaker, Leaf, CheckCircle2, Circle, Star, Sparkles, ShieldCheck, Zap, AlertCircle, TrendingUp, Timer, Plus, Trash2 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
@@ -11,28 +11,84 @@ import Link from 'next/link';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 
+interface Task {
+  id: string;
+  title: string;
+  completed: boolean;
+  icon: string;
+  date: string;
+}
+
+const DEFAULT_TASKS: Task[] = [
+  { id: '1', title: 'Morning Irrigation', completed: false, icon: '💧', date: format(new Date(), 'yyyy-MM-dd') },
+  { id: '2', title: 'Check Crop Health', completed: false, icon: '🔎', date: format(new Date(), 'yyyy-MM-dd') },
+  { id: '3', title: 'Apply Organic Fertilizer', completed: false, icon: '🌱', date: format(new Date(), 'yyyy-MM-dd') },
+];
+
+const TASK_ICONS = ['💧', '🌱', '🔎', '🚜', '🌾', '🧪', '📦', '🌿', '🛒', '⚡'];
+
 export default function HomeDashboard() {
   const { sensors, lastUpdated, settings, t } = useSensors();
   const [mounted, setMounted] = useState(false);
   const [irrigationOn, setIrrigationOn] = useState(false);
+  const [tasks, setTasks] = useState<Task[]>(DEFAULT_TASKS);
+  const [addingTask, setAddingTask] = useState(false);
+  const [newTaskTitle, setNewTaskTitle] = useState('');
 
   useEffect(() => {
     setMounted(true);
+    // Load tasks from localStorage
+    const today = format(new Date(), 'yyyy-MM-dd');
+    const saved = localStorage.getItem('agrisense_tasks');
+    if (saved) {
+      const parsed: Task[] = JSON.parse(saved);
+      // Reset completion for new day
+      const todayTasks = parsed.map(t => ({
+        ...t,
+        completed: t.date === today ? t.completed : false,
+        date: today,
+      }));
+      setTasks(todayTasks);
+    }
+    // Load irrigation state
+    const valve = localStorage.getItem('agrisense_valve');
+    if (valve) setIrrigationOn(valve === 'true');
   }, []);
 
-  // Simulate Smart Valve increasing moisture
-  useEffect(() => {
-    let interval: NodeJS.Timeout;
-    if (irrigationOn) {
-      interval = setInterval(() => {
-        // Increase moisture by 1% every 3 seconds while valve is on (up to 95%)
-        if (sensors.soilMoisture < 95) {
-          sensors.soilMoisture = Math.min(95, sensors.soilMoisture + 1);
-        }
-      }, 3000);
-    }
-    return () => clearInterval(interval);
-  }, [irrigationOn, sensors]);
+  const persistTasks = (updated: Task[]) => {
+    setTasks(updated);
+    localStorage.setItem('agrisense_tasks', JSON.stringify(updated));
+  };
+
+  const toggleTask = (id: string) => {
+    const today = format(new Date(), 'yyyy-MM-dd');
+    persistTasks(tasks.map(t => t.id === id ? { ...t, completed: !t.completed, date: today } : t));
+  };
+
+  const deleteTask = (id: string) => {
+    persistTasks(tasks.filter(t => t.id !== id));
+  };
+
+  const addTask = () => {
+    if (!newTaskTitle.trim()) return;
+    const icon = TASK_ICONS[Math.floor(Math.random() * TASK_ICONS.length)];
+    const newTask: Task = {
+      id: Date.now().toString(),
+      title: newTaskTitle.trim(),
+      completed: false,
+      icon,
+      date: format(new Date(), 'yyyy-MM-dd'),
+    };
+    persistTasks([...tasks, newTask]);
+    setNewTaskTitle('');
+    setAddingTask(false);
+  };
+
+  const toggleValve = () => {
+    const next = !irrigationOn;
+    setIrrigationOn(next);
+    localStorage.setItem('agrisense_valve', String(next));
+  };
 
   const calculateHealthScore = () => {
     let score = 100;
@@ -44,18 +100,13 @@ export default function HomeDashboard() {
   };
 
   const healthScore = calculateHealthScore();
-
-  const tasks = [
-    { id: 1, title: 'Morning Irrigation', completed: true, icon: '💧' },
-    { id: 2, title: `Check ${settings.cropType} Health`, completed: false, icon: '🔎' },
-    { id: 3, title: 'Apply Organic Fertilizer', completed: false, icon: '🌱' },
-  ];
+  const completedCount = tasks.filter(t => t.completed).length;
 
   if (!mounted) return null;
 
   return (
-    <div className="space-y-7 animate-in fade-in slide-in-from-bottom-3 duration-300 ease-out pb-24">
-      {/* Live Alerts Header */}
+    <div className="space-y-7 animate-in fade-in slide-in-from-bottom-6 duration-700 ease-out pb-24">
+      {/* Live Alert */}
       {sensors.soilMoisture < 65 && (
         <div className="bg-destructive/10 border border-destructive/20 p-4 rounded-3xl flex items-center gap-3 animate-bounce shadow-lg">
           <AlertCircle className="w-5 h-5 text-destructive" />
@@ -63,7 +114,7 @@ export default function HomeDashboard() {
         </div>
       )}
 
-      {/* Premium Farm Health Summary */}
+      {/* Farm Health Summary */}
       <section className="relative overflow-hidden rounded-[2.5rem] p-7 text-white shadow-premium health-gradient-excellent group border-none">
         <div className="relative z-10 flex flex-col gap-6">
           <div className="flex items-center justify-between">
@@ -87,23 +138,19 @@ export default function HomeDashboard() {
             </div>
             <div className="flex-1 space-y-2">
               <div className="h-2 w-full bg-white/20 rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-white rounded-full transition-all duration-1000 ease-out"
-                  style={{ width: `${healthScore}%` }}
-                />
+                <div className="h-full bg-white rounded-full transition-all duration-1000 ease-out" style={{ width: `${healthScore}%` }} />
               </div>
               <p className="text-xs font-bold opacity-90 leading-relaxed">
-                {t('dashboard_health_stable')}: {healthScore > 80 ? t('dashboard_health_excellent') : t('dashboard_health_stable')}.
+                {healthScore > 80 ? t('dashboard_health_excellent') : t('dashboard_health_stable')}
               </p>
             </div>
           </div>
         </div>
-
         <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/5 rounded-full blur-3xl group-hover:bg-white/10 transition-colors" />
         <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-accent/10 rounded-full blur-3xl" />
       </section>
 
-      {/* Crop Lifecycle Tracker */}
+      {/* Crop Lifecycle */}
       <Card className="border-none shadow-sm bg-primary/5 rounded-[2rem] border border-primary/10 overflow-hidden">
         <CardContent className="p-6 flex items-center gap-4">
           <div className="bg-primary text-white p-3 rounded-2xl">
@@ -121,7 +168,7 @@ export default function HomeDashboard() {
         </CardContent>
       </Card>
 
-      {/* Modern Sensor Grid */}
+      {/* Sensor Grid */}
       <section className="grid grid-cols-2 gap-4">
         {[
           { key: 'dashboard_moisture', val: sensors.soilMoisture, icon: Droplets, color: 'text-blue-500', bg: 'bg-blue-500/10', unit: '%', optimal: '70-80%' },
@@ -155,7 +202,7 @@ export default function HomeDashboard() {
         ))}
       </section>
 
-      {/* Live Market Alert */}
+      {/* Market Alert */}
       <Card className="border-none shadow-lg bg-accent/5 border border-accent/20 rounded-[2rem] overflow-hidden">
         <CardContent className="p-6 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -173,7 +220,7 @@ export default function HomeDashboard() {
         </CardContent>
       </Card>
 
-      {/* Quick Action Hub */}
+      {/* Quick Actions */}
       <section className="grid grid-cols-2 gap-4">
         <Button asChild variant="outline" className="h-28 flex-col gap-3 rounded-[2rem] bg-card/40 border-primary/10 shadow-sm hover:bg-primary/5 transition-all">
           <Link href="/diagnosis">
@@ -191,11 +238,7 @@ export default function HomeDashboard() {
             </div>
             <p className="text-[10px] font-black uppercase tracking-widest">{t('dashboard_smart_valve')}</p>
             <button
-              onClick={() => {
-                const newState = !irrigationOn;
-                setIrrigationOn(newState);
-                // Optional: show a quick toast if a toast function was available
-              }}
+              onClick={toggleValve}
               className={cn(
                 "px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest transition-all",
                 irrigationOn ? "bg-blue-500/20 text-blue-600" : "bg-muted/50 text-muted-foreground"
@@ -207,32 +250,75 @@ export default function HomeDashboard() {
         </Card>
       </section>
 
-      {/* Elegant Daily Tasks */}
+      {/* Operational Log */}
       <section className="space-y-4">
         <div className="flex items-center justify-between px-2">
           <h3 className="text-xs font-black text-primary uppercase tracking-[0.2em]">{t('dashboard_ops_log')}</h3>
-          <Badge variant="secondary" className="bg-primary/5 text-primary text-[9px] font-black tracking-widest px-3 py-1 rounded-full">
-            {tasks.filter(t => t.completed).length}/{tasks.length} DONE
-          </Badge>
+          <div className="flex items-center gap-2">
+            <Badge variant="secondary" className="bg-primary/5 text-primary text-[9px] font-black tracking-widest px-3 py-1 rounded-full">
+              {completedCount}/{tasks.length} DONE
+            </Badge>
+            <button
+              onClick={() => setAddingTask(!addingTask)}
+              className="p-1.5 bg-primary/10 rounded-xl hover:bg-primary/20 transition-all"
+            >
+              <Plus className="w-3.5 h-3.5 text-primary" />
+            </button>
+          </div>
         </div>
+
+        {/* Add Task Input */}
+        {addingTask && (
+          <div className="flex gap-2 animate-in slide-in-from-top-2 duration-200">
+            <input
+              autoFocus
+              type="text"
+              value={newTaskTitle}
+              onChange={e => setNewTaskTitle(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter') addTask(); if (e.key === 'Escape') setAddingTask(false); }}
+              placeholder="New task..."
+              className="flex-1 bg-muted/50 border-none rounded-2xl px-4 py-3 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/30"
+            />
+            <button onClick={addTask} className="bg-primary text-white px-4 rounded-2xl font-black text-xs">Add</button>
+          </div>
+        )}
+
         <div className="space-y-3">
           {tasks.map(task => (
-            <div key={task.id} className="flex items-center gap-4 p-5 rounded-[1.5rem] bg-card/40 backdrop-blur-sm border border-white/10 shadow-sm group hover:border-primary/30 transition-all active:scale-[0.98]">
-              <div className="text-2xl group-hover:scale-110 transition-transform">{task.icon}</div>
-              <div className="flex-1">
-                <p className={cn("text-sm font-bold tracking-tight", task.completed ? "text-muted-foreground line-through opacity-60" : "text-foreground")}>
+            <div
+              key={task.id}
+              className="flex items-center gap-4 p-5 rounded-[1.5rem] bg-card/40 backdrop-blur-sm border border-white/10 shadow-sm group hover:border-primary/30 transition-all active:scale-[0.98]"
+            >
+              <button onClick={() => toggleTask(task.id)} className="text-2xl group-hover:scale-110 transition-transform flex-shrink-0">
+                {task.icon}
+              </button>
+              <div className="flex-1" onClick={() => toggleTask(task.id)}>
+                <p className={cn("text-sm font-bold tracking-tight cursor-pointer", task.completed ? "text-muted-foreground line-through opacity-60" : "text-foreground")}>
                   {task.title}
                 </p>
               </div>
-              {task.completed ? (
-                <div className="bg-green-500/10 p-1.5 rounded-full">
-                  <CheckCircle2 className="w-5 h-5 text-green-500" />
-                </div>
-              ) : (
-                <Circle className="w-5 h-5 text-muted-foreground/40 group-hover:text-primary transition-colors" />
-              )}
+              <div className="flex items-center gap-2">
+                <button onClick={() => toggleTask(task.id)}>
+                  {task.completed ? (
+                    <div className="bg-green-500/10 p-1.5 rounded-full">
+                      <CheckCircle2 className="w-5 h-5 text-green-500" />
+                    </div>
+                  ) : (
+                    <Circle className="w-5 h-5 text-muted-foreground/40 hover:text-primary transition-colors" />
+                  )}
+                </button>
+                <button onClick={() => deleteTask(task.id)} className="opacity-0 group-hover:opacity-100 transition-opacity p-1">
+                  <Trash2 className="w-3.5 h-3.5 text-muted-foreground/50 hover:text-destructive transition-colors" />
+                </button>
+              </div>
             </div>
           ))}
+
+          {tasks.length === 0 && (
+            <div className="text-center py-8 opacity-30">
+              <p className="text-xs font-black uppercase tracking-widest">No tasks — tap + to add one</p>
+            </div>
+          )}
         </div>
       </section>
 

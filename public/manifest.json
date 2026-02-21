@@ -3,155 +3,72 @@
   "short_name": "AgriSense",
   "description": "Precision agricultural technology for small farmers in India",
   "start_url": "/",
-  "id": "/",
   "display": "standalone",
-  "display_override": [
-    "window-controls-overlay",
-    "minimal-ui",
-    "browser"
-  ],
-  "background_color": "#062016",
-  "theme_color": "#0a3d2a",
+  "background_color": "#1B4D2E",
+  "theme_color": "#1B4D2E",
   "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "en-IN",
+  "dir": "ltr",
   "categories": [
     "agriculture",
     "productivity",
-    "utilities",
-    "education"
+    "utilities"
   ],
-  "dir": "ltr",
-  "lang": "en-IN",
   "icons": [
     {
-      "src": "/icons/icon-72x72.png",
-      "sizes": "72x72",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "/icons/icon-96x96.png",
-      "sizes": "96x96",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "/icons/icon-128x128.png",
-      "sizes": "128x128",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "/icons/icon-144x144.png",
-      "sizes": "144x144",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "/icons/icon-152x152.png",
-      "sizes": "152x152",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "/icons/icon-192x192.png",
+      "src": "/icon-192.svg",
       "sizes": "192x192",
-      "type": "image/png",
+      "type": "image/svg+xml",
       "purpose": "any"
     },
     {
-      "src": "/icons/icon-192x192-maskable.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "maskable"
-    },
-    {
-      "src": "/icons/icon-384x384.png",
-      "sizes": "384x384",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "/icons/icon-512x512.png",
+      "src": "/icon-512.svg",
       "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "/icons/icon-512x512-maskable.png",
-      "sizes": "512x512",
-      "type": "image/png",
+      "type": "image/svg+xml",
       "purpose": "maskable"
     }
   ],
   "shortcuts": [
     {
+      "name": "Scan Crop",
+      "short_name": "Scan",
+      "description": "AI Disease Diagnosis",
+      "url": "/diagnosis",
+      "icons": [
+        {
+          "src": "/icon-192.svg",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
       "name": "AI Advisor",
       "short_name": "Advisor",
-      "description": "Get AI-powered crop advice",
+      "description": "Ask your farm advisor",
       "url": "/advisor",
       "icons": [
         {
-          "src": "/icons/icon-96x96.png",
-          "sizes": "96x96"
+          "src": "/icon-192.svg",
+          "sizes": "192x192"
         }
       ]
     },
     {
       "name": "Market Prices",
       "short_name": "Prices",
-      "description": "Check current market prices",
+      "description": "Live crop market prices",
       "url": "/prices",
       "icons": [
         {
-          "src": "/icons/icon-96x96.png",
-          "sizes": "96x96"
-        }
-      ]
-    },
-    {
-      "name": "Crop Diagnosis",
-      "short_name": "Diagnosis",
-      "description": "Scan your crops for diseases",
-      "url": "/diagnosis",
-      "icons": [
-        {
-          "src": "/icons/icon-96x96.png",
-          "sizes": "96x96"
+          "src": "/icon-192.svg",
+          "sizes": "192x192"
         }
       ]
     }
   ],
-  "screenshots": [
-    {
-      "src": "/icons/icon-512x512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "form_factor": "narrow",
-      "label": "AgriSense AI Dashboard"
-    }
-  ],
-  "share_target": {
-    "action": "/journal",
-    "method": "GET",
-    "params": {
-      "title": "title",
-      "text": "text",
-      "url": "url"
-    }
-  },
-  "note_taking": {
-    "new_note_url": "/journal?new=true"
-  },
   "launch_handler": {
     "client_mode": "navigate-existing"
   },
-  "edge_side_panel": {
-    "preferred_width": 400
-  },
-  "protocol_handlers": [
-    {
-      "protocol": "web+agrisense",
-      "url": "/?q=%s"
-    }
-  ]
+  "prefer_related_applications": false
 }

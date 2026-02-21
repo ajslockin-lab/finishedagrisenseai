@@ -1,48 +1,23 @@
 "use client";
 
 import { Card, CardContent } from '@/components/ui/card';
-import { ShieldCheck, Cloud, FileText, Landmark, Settings, ChevronRight, Crown, Plane, GraduationCap } from 'lucide-react';
+import { ShieldCheck, Cloud, FileText, Landmark, Settings, ChevronRight, ExternalLink, Calendar, Phone, BookOpen } from 'lucide-react';
 import Link from 'next/link';
 import { useSensors } from '@/context/SensorContext';
 import { cn } from '@/lib/utils';
-import { useToast } from '@/hooks/use-toast';
 
 export default function MoreHub() {
   const { t } = useSensors();
-  const { toast } = useToast();
 
   const services = [
-    {
-      title: "Subscription Plans",
-      desc: 'Manage Your Plan',
-      icon: Crown,
-      href: '/subscription',
-      color: 'bg-yellow-500',
-      iconColor: 'text-yellow-500'
-    },
-    {
-      title: "Drone Services",
-      desc: 'Aerial Intelligence',
-      icon: Plane,
-      href: '/drone',
-      color: 'bg-blue-600',
-      iconColor: 'text-blue-600'
-    },
-    {
-      title: "Education Hub",
-      desc: 'Learn Smart Farming',
-      icon: GraduationCap,
-      href: '/education',
-      color: 'bg-indigo-500',
-      iconColor: 'text-indigo-500'
-    },
     {
       title: t('more_doctor'),
       desc: 'AI Disease Diagnosis',
       icon: ShieldCheck,
       href: '/diagnosis',
       color: 'bg-green-500',
-      iconColor: 'text-green-500'
+      iconColor: 'text-green-500',
+      external: false,
     },
     {
       title: t('more_weather'),
@@ -50,7 +25,8 @@ export default function MoreHub() {
       icon: Cloud,
       href: '/weather',
       color: 'bg-blue-500',
-      iconColor: 'text-blue-500'
+      iconColor: 'text-blue-500',
+      external: false,
     },
     {
       title: t('more_journal'),
@@ -58,7 +34,8 @@ export default function MoreHub() {
       icon: FileText,
       href: '/journal',
       color: 'bg-orange-500',
-      iconColor: 'text-orange-500'
+      iconColor: 'text-orange-500',
+      external: false,
     },
     {
       title: t('more_schemes'),
@@ -66,7 +43,8 @@ export default function MoreHub() {
       icon: Landmark,
       href: '/schemes',
       color: 'bg-purple-500',
-      iconColor: 'text-purple-500'
+      iconColor: 'text-purple-500',
+      external: false,
     },
     {
       title: t('settings_title'),
@@ -74,7 +52,29 @@ export default function MoreHub() {
       icon: Settings,
       href: '/settings',
       color: 'bg-gray-500',
-      iconColor: 'text-gray-500'
+      iconColor: 'text-gray-500',
+      external: false,
+    },
+  ];
+
+  const resources = [
+    {
+      label: 'Market Holidays (APMC)',
+      sub: 'National Agriculture Market',
+      icon: Calendar,
+      href: 'https://www.enam.gov.in/web/',
+    },
+    {
+      label: 'Kisan Call Center',
+      sub: 'Free helpline: 1800-180-1551',
+      icon: Phone,
+      href: 'tel:18001801551',
+    },
+    {
+      label: 'App Manual & Guide',
+      sub: 'AgriSense usage documentation',
+      icon: BookOpen,
+      href: 'https://agrisenseaindia.netlify.app',
     },
   ];
 
@@ -86,8 +86,8 @@ export default function MoreHub() {
       </div>
 
       <div className="grid gap-4">
-        {services.map((service, i) => (
-          <Link href={service.href} key={i}>
+        {services.map((service, i) => {
+          const inner = (
             <Card className="border-none shadow-sm hover:shadow-md transition-all active:scale-[0.98] bg-card/40 backdrop-blur-md rounded-[1.5rem] overflow-hidden group border border-white/10">
               <CardContent className="p-4 flex items-center gap-4">
                 <div className={cn("p-3 rounded-2xl", service.iconColor, "bg-white/10")}>
@@ -100,36 +100,61 @@ export default function MoreHub() {
                 <ChevronRight className="w-5 h-5 text-muted-foreground opacity-30 group-hover:opacity-100 transition-opacity" />
               </CardContent>
             </Card>
-          </Link>
-        ))}
+          );
+          return service.external
+            ? <a key={i} href={service.href} target="_blank" rel="noopener noreferrer">{inner}</a>
+            : <Link href={service.href} key={i}>{inner}</Link>;
+        })}
       </div>
 
-      <section className="bg-primary/5 rounded-[2rem] p-6 border border-primary/10">
-        <h3 className="text-xs font-black text-primary uppercase tracking-widest mb-3">Resources</h3>
-        <ul className="space-y-4">
-          <li
-            onClick={() => toast({ title: "Market Holidays", description: "All APMC markets are closed this Sunday.", duration: 3000 })}
-            className="flex items-center justify-between text-xs font-bold text-muted-foreground cursor-pointer active:scale-95 transition-transform"
-          >
-            <span>Market Holidays</span>
-            <span className="text-primary bg-primary/10 px-3 py-1 rounded-full">View</span>
-          </li>
-          <li
-            onClick={() => window.open('tel:1551')}
-            className="flex items-center justify-between text-xs font-bold text-muted-foreground cursor-pointer active:scale-95 transition-transform"
-          >
-            <span>Kisan Call Center</span>
-            <span className="text-primary bg-primary/10 px-3 py-1 rounded-full">Call 1551</span>
-          </li>
-          <li
-            onClick={() => toast({ title: "App Manual", description: "Downloading offline manual PDF...", duration: 2000 })}
-            className="flex items-center justify-between text-xs font-bold text-muted-foreground cursor-pointer active:scale-95 transition-transform"
-          >
-            <span>App Manual</span>
-            <span className="text-primary bg-primary/10 px-3 py-1 rounded-full">Read</span>
-          </li>
-        </ul>
+      {/* Resources with real links */}
+      <section className="bg-primary/5 rounded-[2rem] p-6 border border-primary/10 space-y-4">
+        <h3 className="text-xs font-black text-primary uppercase tracking-widest">Resources</h3>
+        <div className="space-y-3">
+          {resources.map((r, i) => (
+            <a
+              key={i}
+              href={r.href}
+              target={r.href.startsWith('http') ? '_blank' : undefined}
+              rel="noopener noreferrer"
+              className="flex items-center justify-between p-3 rounded-2xl bg-card/40 border border-white/10 hover:bg-primary/5 transition-all active:scale-[0.98] group"
+            >
+              <div className="flex items-center gap-3">
+                <div className="bg-primary/10 p-2 rounded-xl">
+                  <r.icon className="w-4 h-4 text-primary" />
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-foreground">{r.label}</p>
+                  <p className="text-[9px] text-muted-foreground font-medium">{r.sub}</p>
+                </div>
+              </div>
+              <ExternalLink className="w-3.5 h-3.5 text-muted-foreground/40 group-hover:text-primary transition-colors" />
+            </a>
+          ))}
+        </div>
       </section>
+
+      {/* Find nearest CSC */}
+      <a
+        href="https://locator.csccloud.in"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="block"
+      >
+        <div className="bg-primary p-6 rounded-[2rem] text-white shadow-xl relative overflow-hidden active:scale-[0.98] transition-all">
+          <div className="relative z-10 space-y-3">
+            <h3 className="text-lg font-black uppercase tracking-wider">Find Nearest CSC</h3>
+            <p className="text-xs font-medium opacity-80 leading-relaxed">
+              Visit your nearest Common Service Center for scheme verification and government assistance.
+            </p>
+            <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest bg-white/10 px-4 py-2 rounded-full w-fit">
+              <ExternalLink className="w-3 h-3" />
+              locator.csccloud.in
+            </div>
+          </div>
+          <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2" />
+        </div>
+      </a>
     </div>
   );
 }
