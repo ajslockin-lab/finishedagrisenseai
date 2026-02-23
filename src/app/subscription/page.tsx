@@ -15,9 +15,12 @@ import {
     AccordionTrigger
 } from "@/components/ui/accordion";
 import { useToast } from "@/hooks/use-toast";
+import { Slider } from "@/components/ui/slider";
 
 export default function SubscriptionPage() {
     const { t } = useSensors();
+    const [farmSize, setFarmSize] = useState([10]);
+    const profitIncrease = farmSize[0] * 28000;
     const { toast } = useToast();
     const [isYearly, setIsYearly] = useState(true);
     const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
@@ -30,13 +33,13 @@ export default function SubscriptionPage() {
             name: "Normal",
             monthlyPrice: 1000,
             yearlyPrice: 10000,
-            description: "Essential tools for small farms",
+            description: "Essential data for active farming",
             features: [
-                "Real-time IoT Sensor Data",
-                "Basic Crop Health Advice",
-                "Basic Weather Forecasts",
-                "Market Prices (Daily Updates)",
-                "Community Support"
+                "Basic IoT Sensor Data",
+                "Real-time Weather Alerts",
+                "AI Crop Advisories",
+                "Basic Farm Journaling",
+                "Community Access"
             ],
             icon: Shield,
             color: "text-blue-500",
@@ -47,14 +50,14 @@ export default function SubscriptionPage() {
             name: "Pro",
             monthlyPrice: 2500,
             yearlyPrice: 25000,
-            description: "Advanced analytics for growing farms",
+            description: "Deep insights for yield optimization",
             features: [
                 "Everything in Normal",
-                "AI Irrigation & Fertilization Alerts",
-                "Market Price Planning Tools",
-                "AI Advisor (Unlimited)",
-                "Priority Support",
-                "Yield Optimization Insights"
+                "AI Soil & Irrigation Insights",
+                "Real-time Market Prices",
+                "Advanced Irrigation Alerts",
+                "Priority AI Advisor Support",
+                "Yield Projection Analytics"
             ],
             icon: Zap,
             color: "text-primary",
@@ -66,14 +69,14 @@ export default function SubscriptionPage() {
             name: "Premium",
             monthlyPrice: 5000,
             yearlyPrice: 50000,
-            description: "Complete solution for professional farming",
+            description: "The ultimate autonomous farm solution",
             features: [
                 "Everything in Pro",
-                "Drone-Based Pest Scouting",
-                "Field Health Aerial Imaging",
-                "1-on-1 Expert Consultation",
-                "Advanced Disease Diagnostics",
-                "Export Data Reports"
+                "UAV Pest Scouting (Aerial)",
+                "High-Priority Expert Support",
+                "Field Health Multi-spectral Maps",
+                "Unlimited AI Diagnostics",
+                "Export Full Farm Reports"
             ],
             icon: Crown,
             color: "text-yellow-500",
@@ -257,6 +260,48 @@ export default function SubscriptionPage() {
                 ))}
             </div>
 
+            {/* IoT Hardware Pricing */}
+            <div className="space-y-6 pt-8">
+                <div className="flex items-center gap-3 px-2">
+                    <div className="bg-primary/10 p-3 rounded-2xl">
+                        <Zap className="w-6 h-6 text-primary" />
+                    </div>
+                    <div>
+                        <h2 className="text-2xl font-black text-primary">Precision Hardware</h2>
+                        <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">Simulation Pricing</p>
+                    </div>
+                </div>
+
+                <div className="grid gap-6 md:grid-cols-2">
+                    <Card className="border-none bg-white/40 dark:bg-card/40 backdrop-blur-md rounded-[2.5rem] border border-white/10 overflow-hidden group hover:scale-[1.02] transition-transform shadow-xl">
+                        <CardHeader className="p-8">
+                            <Badge className="bg-green-500/10 text-green-500 border-none w-fit mb-4 font-black">SOIL SENSOR V1.0</Badge>
+                            <CardTitle className="text-3xl font-black">₹5,000</CardTitle>
+                            <CardDescription className="text-foreground font-bold mt-2">Basic Soil Sensor Kit</CardDescription>
+                        </CardHeader>
+                        <CardContent className="px-8 pb-8 pt-0">
+                            <p className="text-sm font-medium text-muted-foreground leading-relaxed">
+                                Standard precision sensor for moisture and pH monitoring.
+                            </p>
+                        </CardContent>
+                    </Card>
+
+                    <Card className="border-none bg-slate-950 text-white rounded-[2.5rem] overflow-hidden relative group hover:scale-[1.02] transition-transform shadow-2xl">
+                        <CardHeader className="p-8 relative z-10">
+                            <Badge className="bg-primary/20 text-primary border-primary/20 w-fit mb-4 font-black">ADVANCED HUB</Badge>
+                            <CardTitle className="text-3xl font-black text-primary">₹10,000</CardTitle>
+                            <CardDescription className="text-slate-300 font-bold mt-2">Advanced Sensor Bundle</CardDescription>
+                        </CardHeader>
+                        <CardContent className="px-8 pb-8 pt-0 relative z-10">
+                            <p className="text-sm font-medium text-slate-400 leading-relaxed">
+                                Multi-sensor arrays for automated nutrient and irrigation control.
+                            </p>
+                        </CardContent>
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 blur-3xl rounded-full" />
+                    </Card>
+                </div>
+            </div>
+
             {/* ROI Section */}
             <div className="grid md:grid-cols-2 gap-6 items-center bg-slate-950 text-white rounded-[2.5rem] p-8 md:p-12 overflow-hidden relative">
                 <div className="space-y-6 relative z-10">
@@ -275,16 +320,30 @@ export default function SubscriptionPage() {
                 </div>
                 <div className="relative h-64 flex items-center justify-center">
                     <div className="absolute inset-0 bg-primary/20 blur-[100px] rounded-full" />
-                    <Card className="bg-white/5 border-white/10 backdrop-blur-xl p-6 relative z-10">
-                        <h4 className="font-bold mb-4">Projected Profit Increase</h4>
-                        <div className="flex items-end gap-2 h-32">
-                            {[40, 60, 45, 80, 75, 95].map((h, i) => (
-                                <div key={i} className="flex-1 bg-primary/40 rounded-t-lg transition-all hover:bg-primary" style={{ height: `${h}%` }} />
-                            ))}
+                    <Card className="bg-white/5 border-white/10 backdrop-blur-xl p-8 relative z-10 w-full flex flex-col gap-8">
+                        <div>
+                            <h4 className="font-bold text-lg mb-1">Projected Annual Profit</h4>
+                            <div className="text-4xl font-black text-primary">₹{profitIncrease.toLocaleString()}</div>
                         </div>
-                        <div className="flex justify-between mt-2 text-[10px] font-bold text-slate-400">
-                            <span>MONTH 1</span>
-                            <span>MONTH 6</span>
+
+                        <div className="space-y-4">
+                            <div className="flex justify-between text-sm font-bold text-slate-300">
+                                <span>Farm Size</span>
+                                <span className="text-white bg-primary/20 px-3 py-1 rounded-full">{farmSize[0]} Hectares</span>
+                            </div>
+                            <Slider
+                                defaultValue={[10]}
+                                max={500}
+                                min={1}
+                                step={1}
+                                value={farmSize}
+                                onValueChange={setFarmSize}
+                                className="w-full cursor-pointer"
+                            />
+                            <div className="flex justify-between text-[10px] font-bold text-slate-500">
+                                <span>1 ha</span>
+                                <span>500 ha</span>
+                            </div>
                         </div>
                     </Card>
                 </div>

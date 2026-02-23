@@ -8,11 +8,10 @@ const geminiApiKey =
   process.env.GEMINI_API_KEY ||
   process.env.GOOGLE_API_KEY;
 
-// Models in fallback order: 2.5 Flash Lite → 3 Flash → 2.5 Flash
+// Models in fallback order: 1.5 Flash → 1.5 Pro
 export const GEMINI_MODELS = [
-  'googleai/gemini-2.5-flash-lite',
-  'googleai/gemini-3-flash-preview',
-  'googleai/gemini-2.5-flash',
+  'googleai/gemini-1.5-flash',
+  'googleai/gemini-1.5-pro',
 ] as const;
 
 export type GeminiModel = typeof GEMINI_MODELS[number];

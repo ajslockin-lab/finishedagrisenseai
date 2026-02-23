@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 import { Navigation } from '@/components/Navigation';
 import { Header } from '@/components/Header';
+import { Footer } from '@/components/Footer';
 import { Toaster } from '@/components/ui/toaster';
 import { SensorProvider } from '@/context/SensorContext';
 import { ThemeProvider } from '@/context/ThemeContext';
@@ -50,6 +51,7 @@ export default function RootLayout({
                 <main className="flex-1 px-4 py-4 space-y-6 overflow-x-hidden">
                   {children}
                 </main>
+                <Footer />
                 <Navigation />
               </div>
               <Toaster />

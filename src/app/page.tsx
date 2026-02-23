@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { Droplets, Thermometer, Beaker, Leaf, CheckCircle2, Circle, Star, Sparkles, ShieldCheck, Zap, AlertCircle, TrendingUp, Timer, Plus, Trash2 } from 'lucide-react';
+import { Droplets, Thermometer, Beaker, Leaf, CheckCircle2, Circle, Star, Sparkles, ShieldCheck, Zap, AlertCircle, TrendingUp, Timer, Plus, Trash2, Crown, ArrowRight, BookOpen, Plane, LayoutGrid, ChevronRight } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
@@ -110,7 +110,9 @@ export default function HomeDashboard() {
       {sensors.soilMoisture < 65 && (
         <div className="bg-destructive/10 border border-destructive/20 p-4 rounded-3xl flex items-center gap-3 animate-bounce shadow-lg">
           <AlertCircle className="w-5 h-5 text-destructive" />
-          <p className="text-[10px] font-black text-destructive uppercase tracking-widest">Urgent: Low Moisture ({sensors.soilMoisture.toFixed(1)}%)</p>
+          <p className="text-[10px] font-black text-destructive uppercase tracking-widest">
+            {t('settings_alerts')}: {t('dashboard_moisture')} ({sensors.soilMoisture.toFixed(1)}%)
+          </p>
         </div>
       )}
 
@@ -120,7 +122,13 @@ export default function HomeDashboard() {
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
               <h2 className="text-xl font-black uppercase tracking-widest text-white/90">{t('dashboard_integrity')}</h2>
-              <p className="text-[10px] font-bold text-white/60 tracking-[0.3em]">{t('dashboard_live')}</p>
+              <div className="flex items-center gap-2">
+                <span className="relative flex h-2 w-2 mt-0.5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                </span>
+                <p className="text-[10px] font-bold text-white/90 tracking-[0.3em]">{t('dashboard_live')}</p>
+              </div>
             </div>
             <div className="flex bg-white/10 backdrop-blur-xl px-4 py-1.5 rounded-full items-center gap-2 border border-white/20 shadow-lg">
               <Star className="w-3.5 h-3.5 fill-accent text-accent animate-spin-slow" />
@@ -158,7 +166,7 @@ export default function HomeDashboard() {
           </div>
           <div className="flex-1 space-y-2">
             <div className="flex justify-between items-center">
-              <span className="text-[10px] font-black uppercase tracking-widest text-primary">Vegetative Stage</span>
+              <span className="text-[10px] font-black uppercase tracking-widest text-primary">{t('dashboard_status_veg')}</span>
               <span className="text-[10px] font-black text-muted-foreground">Day 42 of 120</span>
             </div>
             <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
@@ -176,7 +184,7 @@ export default function HomeDashboard() {
           { key: 'dashboard_ph', val: sensors.soilPh, icon: Beaker, color: 'text-purple-500', bg: 'bg-purple-500/10', unit: '', optimal: '6.0-7.0' },
           { key: 'dashboard_nutrients', val: sensors.nutrientLevel, icon: Leaf, color: 'text-green-500', bg: 'bg-green-500/10', unit: '', optimal: 'High' }
         ].map((sensor, idx) => (
-          <Card key={idx} className="border-none shadow-md hover:shadow-xl transition-all duration-300 bg-card/40 backdrop-blur-md rounded-[2rem] group overflow-hidden border border-white/10">
+          <Card key={idx} className="border-none shadow-md bg-card/40 backdrop-blur-md rounded-[2rem] group overflow-hidden border border-white/10 active:opacity-80 transition-opacity">
             <CardContent className="p-5 space-y-4">
               <div className="flex items-center justify-between">
                 <div className={cn("p-2 rounded-2xl transition-transform group-hover:scale-110", sensor.bg)}>
@@ -196,58 +204,10 @@ export default function HomeDashboard() {
                   className="h-1.5 bg-muted/50"
                 />
               </div>
-              <p className="text-[9px] font-black text-muted-foreground/60 tracking-wider">RANGE: {sensor.optimal}</p>
+              <p className="text-[9px] font-black text-muted-foreground/60 tracking-wider font-sans">{t('dashboard_range')}: {sensor.optimal}</p>
             </CardContent>
           </Card>
         ))}
-      </section>
-
-      {/* Market Alert */}
-      <Card className="border-none shadow-lg bg-accent/5 border border-accent/20 rounded-[2rem] overflow-hidden">
-        <CardContent className="p-6 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="bg-accent text-white p-2 rounded-xl">
-              <TrendingUp className="w-5 h-5" />
-            </div>
-            <div>
-              <p className="text-[10px] font-black uppercase tracking-widest text-accent-foreground">Market Alert</p>
-              <p className="text-sm font-bold">{settings.cropType} prices up 4.2%</p>
-            </div>
-          </div>
-          <Link href="/prices">
-            <Button size="sm" variant="ghost" className="text-accent-foreground font-black text-[10px] uppercase">View All</Button>
-          </Link>
-        </CardContent>
-      </Card>
-
-      {/* Quick Actions */}
-      <section className="grid grid-cols-2 gap-4">
-        <Button asChild variant="outline" className="h-28 flex-col gap-3 rounded-[2rem] bg-card/40 border-primary/10 shadow-sm hover:bg-primary/5 transition-all">
-          <Link href="/diagnosis">
-            <ShieldCheck className="w-8 h-8 text-primary" />
-            <span className="text-[10px] font-black uppercase tracking-widest">{t('dashboard_disease_scan')}</span>
-          </Link>
-        </Button>
-        <Card className="border-none shadow-sm bg-card/40 backdrop-blur-md rounded-[2rem] border border-white/10">
-          <CardContent className="p-4 flex flex-col items-center justify-center gap-2 h-full">
-            <div className={cn(
-              "p-3 rounded-full transition-all duration-500",
-              irrigationOn ? "bg-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.6)]" : "bg-muted"
-            )}>
-              <Zap className={cn("w-6 h-6", irrigationOn ? "text-white animate-pulse" : "text-muted-foreground")} />
-            </div>
-            <p className="text-[10px] font-black uppercase tracking-widest">{t('dashboard_smart_valve')}</p>
-            <button
-              onClick={toggleValve}
-              className={cn(
-                "px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest transition-all",
-                irrigationOn ? "bg-blue-500/20 text-blue-600" : "bg-muted/50 text-muted-foreground"
-              )}
-            >
-              {irrigationOn ? t('dashboard_valve_active') : t('dashboard_valve_off')}
-            </button>
-          </CardContent>
-        </Card>
       </section>
 
       {/* Operational Log */}
@@ -256,7 +216,7 @@ export default function HomeDashboard() {
           <h3 className="text-xs font-black text-primary uppercase tracking-[0.2em]">{t('dashboard_ops_log')}</h3>
           <div className="flex items-center gap-2">
             <Badge variant="secondary" className="bg-primary/5 text-primary text-[9px] font-black tracking-widest px-3 py-1 rounded-full">
-              {completedCount}/{tasks.length} DONE
+              {completedCount}/{tasks.length} {t('dashboard_done')}
             </Badge>
             <button
               onClick={() => setAddingTask(!addingTask)}
@@ -276,10 +236,10 @@ export default function HomeDashboard() {
               value={newTaskTitle}
               onChange={e => setNewTaskTitle(e.target.value)}
               onKeyDown={e => { if (e.key === 'Enter') addTask(); if (e.key === 'Escape') setAddingTask(false); }}
-              placeholder="New task..."
+              placeholder={t('dashboard_task_placeholder')}
               className="flex-1 bg-muted/50 border-none rounded-2xl px-4 py-3 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/30"
             />
-            <button onClick={addTask} className="bg-primary text-white px-4 rounded-2xl font-black text-xs">Add</button>
+            <button onClick={addTask} className="bg-primary text-white px-4 rounded-2xl font-black text-xs">{t('dashboard_add_btn')}</button>
           </div>
         )}
 
@@ -316,11 +276,121 @@ export default function HomeDashboard() {
 
           {tasks.length === 0 && (
             <div className="text-center py-8 opacity-30">
-              <p className="text-xs font-black uppercase tracking-widest">No tasks — tap + to add one</p>
+              <p className="text-[9px] font-black uppercase tracking-widest">{t('dashboard_no_tasks')}</p>
             </div>
           )}
         </div>
       </section>
+
+      {/* Quick Actions */}
+      <section className="grid grid-cols-2 gap-4">
+        <Button asChild variant="ghost" className="h-28 flex-col gap-3 rounded-[2rem] bg-card/40 border border-white/10 shadow-sm hover:bg-primary/5 hover:text-primary active:opacity-80 transition-all group">
+          <Link href="/diagnosis">
+            <ShieldCheck className="w-8 h-8 text-primary" />
+            <span className="text-[10px] font-black uppercase tracking-widest text-foreground group-hover:text-primary">{t('dashboard_disease_scan')}</span>
+          </Link>
+        </Button>
+        <Card className="border-none shadow-sm bg-card/40 backdrop-blur-md rounded-[2rem] border border-white/10 active:opacity-80 transition-opacity">
+          <CardContent className="p-4 flex flex-col items-center justify-center gap-2 h-full">
+            <div className={cn(
+              "p-3 rounded-full transition-all duration-500",
+              irrigationOn ? "bg-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.6)]" : "bg-muted"
+            )}>
+              <Zap className={cn("w-6 h-6", irrigationOn ? "text-white animate-pulse" : "text-muted-foreground")} />
+            </div>
+            <p className="text-[10px] font-black uppercase tracking-widest">{t('dashboard_smart_valve')}</p>
+            <button
+              onClick={toggleValve}
+              className={cn(
+                "px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest transition-all",
+                irrigationOn ? "bg-blue-500/20 text-blue-600" : "bg-muted/50 text-muted-foreground"
+              )}
+            >
+              {irrigationOn ? t('dashboard_valve_active') : t('dashboard_valve_off')}
+            </button>
+          </CardContent>
+        </Card>
+
+        {/* Second Row of Quick Actions */}
+        <Button asChild variant="ghost" className="h-28 flex-col gap-3 rounded-[2rem] bg-card/40 border border-white/10 shadow-sm hover:bg-primary/5 hover:text-cyan-500 active:opacity-80 transition-all group">
+          <Link href="/services">
+            <Plane className="w-8 h-8 text-cyan-500" />
+            <span className="text-[10px] font-black uppercase tracking-widest text-foreground group-hover:text-cyan-500">{t('more_drone')}</span>
+          </Link>
+        </Button>
+        <Button asChild variant="ghost" className="h-28 flex-col gap-3 rounded-[2rem] bg-card/40 border border-white/10 shadow-sm hover:bg-primary/5 hover:text-orange-500 active:opacity-80 transition-all group">
+          <Link href="/more">
+            <LayoutGrid className="w-8 h-8 text-orange-500" />
+            <span className="text-[10px] font-black uppercase tracking-widest text-foreground group-hover:text-orange-500">{t('nav_more')}</span>
+          </Link>
+        </Button>
+      </section>
+
+      {/* Bottom CTA Section - Standardized Sizes & Hover Animations */}
+      <div className="space-y-4">
+        {/* Premium Upgrade CTA */}
+        <Card className="border-none shadow-premium bg-gradient-to-br from-amber-500/20 to-orange-500/10 border border-amber-500/20 rounded-[2rem] overflow-hidden group active:opacity-80 transition-all hover:-translate-y-1 h-[100px]">
+          <Link href="/subscription" className="block h-full">
+            <CardContent className="p-6 flex items-center justify-between h-full">
+              <div className="flex items-center gap-4">
+                <div className="bg-amber-500 p-3 rounded-2xl shadow-lg">
+                  <Crown className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-black text-amber-900 dark:text-amber-200 uppercase tracking-wider leading-none">AgriSense Premium</h3>
+                  <p className="text-[10px] font-bold text-amber-700/80 dark:text-amber-400/80 mt-1">{t('dashboard_premium_desc')}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-1.5 bg-amber-500 text-white px-4 py-2 rounded-full text-[10px] font-black uppercase shadow-lg group-hover:px-6 transition-all shrink-0">
+                {t('dashboard_premium_upgrade')}
+                <ArrowRight className="w-3.5 h-3.5" />
+              </div>
+            </CardContent>
+          </Link>
+        </Card>
+
+        {/* Market Alert */}
+        <Card className="border-none shadow-lg bg-orange-500/10 border border-orange-500/20 rounded-[2rem] overflow-hidden group active:opacity-80 transition-all hover:-translate-y-1 h-[100px]">
+          <Link href="/prices" className="block h-full">
+            <CardContent className="p-6 flex items-center justify-between h-full">
+              <div className="flex items-center gap-3">
+                <div className="bg-orange-500 text-white p-3 rounded-xl shadow-lg">
+                  <TrendingUp className="w-6 h-6" />
+                </div>
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-orange-600 dark:text-orange-400 leading-none">{t('dashboard_market_alert')}</p>
+                  <p className="text-sm font-bold mt-1.5">{typeof settings.cropType === 'string' ? settings.cropType : 'Paddy'} {t('dashboard_market_desc')} 4.2%</p>
+                </div>
+              </div>
+              <div className="text-orange-600 dark:text-orange-400 font-black text-[10px] uppercase flex items-center gap-1 bg-orange-500/10 px-4 py-2 rounded-full group-hover:gap-2 transition-all shrink-0">
+                {t('dashboard_view_all_btn')}
+                <ChevronRight className="w-3 h-3" />
+              </div>
+            </CardContent>
+          </Link>
+        </Card>
+
+        {/* Education Hub CTA */}
+        <Card className="border-none shadow-premium bg-gradient-to-br from-blue-500/20 to-cyan-500/10 border border-blue-500/20 rounded-[2rem] overflow-hidden group active:opacity-80 transition-all hover:-translate-y-1 h-[100px]">
+          <Link href="/education" className="block h-full">
+            <CardContent className="p-6 flex items-center justify-between h-full">
+              <div className="flex items-center gap-4">
+                <div className="bg-blue-600 p-3 rounded-2xl shadow-lg">
+                  <BookOpen className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-black text-blue-900 dark:text-blue-200 uppercase tracking-wider leading-none">{t('dashboard_edu_hub')}</h3>
+                  <p className="text-[10px] font-bold text-blue-700/80 dark:text-blue-400/80 mt-1">{t('dashboard_edu_desc')}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-1.5 bg-blue-600 text-white px-4 py-2 rounded-full text-[10px] font-black uppercase shadow-lg group-hover:px-6 transition-all shrink-0">
+                {t('dashboard_learn')}
+                <ArrowRight className="w-3.5 h-3.5" />
+              </div>
+            </CardContent>
+          </Link>
+        </Card>
+      </div>
 
       <Button asChild className="w-full h-18 text-lg font-black bg-primary hover:bg-primary/95 shadow-[0_15px_30px_rgba(56,102,65,0.3)] rounded-[2rem] transition-all hover:-translate-y-1 active:scale-95 border-none">
         <Link href="/advisor" className="flex items-center justify-center gap-3">
@@ -332,7 +402,7 @@ export default function HomeDashboard() {
       <footer className="text-center pt-4 opacity-50 pb-10">
         <p className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.3em] flex items-center justify-center gap-2">
           <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
-          SYNCED: {format(lastUpdated, 'HH:mm:ss')}
+          {t('dashboard_synced')}: {format(lastUpdated, 'HH:mm:ss')}
         </p>
       </footer>
     </div>

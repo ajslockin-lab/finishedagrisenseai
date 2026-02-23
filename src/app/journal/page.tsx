@@ -58,7 +58,7 @@ export default function FarmJournal() {
           <StickyNote className="w-6 h-6 text-accent" />
           {t('journal_title')}
         </h2>
-        <p className="text-[10px] text-muted-foreground font-black uppercase tracking-widest mt-1">Private field logs & observations</p>
+        <p className="text-[10px] text-muted-foreground font-black uppercase tracking-widest mt-1">{t('journal_subtitle')}</p>
       </div>
 
       <Card className="border-none shadow-xl bg-card/60 dark:bg-card/40 backdrop-blur-xl rounded-[2rem] border border-border/50">
@@ -71,7 +71,7 @@ export default function FarmJournal() {
           />
           <Button onClick={handleAddEntry} className="w-full h-14 rounded-2xl bg-primary hover:bg-primary/90 text-primary-foreground font-black gap-2 shadow-lg transition-all active:scale-[0.98]">
             <Plus className="w-5 h-5" />
-            Add Observation
+            {t('journal_add_btn')}
           </Button>
         </CardContent>
       </Card>
@@ -98,8 +98,8 @@ export default function FarmJournal() {
         {entries.length === 0 && (
           <div className="text-center py-16 opacity-40 bg-muted/20 rounded-[2rem] border border-dashed border-border/50">
             <StickyNote className="w-12 h-12 mx-auto mb-3 text-muted-foreground" />
-            <p className="text-xs font-black uppercase tracking-widest text-muted-foreground">No entries yet</p>
-            <p className="text-[10px] font-bold text-muted-foreground mt-1">Your observations will appear here.</p>
+            <p className="text-xs font-black uppercase tracking-widest text-muted-foreground">{t('journal_no_entries')}</p>
+            <p className="text-[10px] font-bold text-muted-foreground mt-1">{t('journal_no_entries_desc')}</p>
           </div>
         )}
       </div>

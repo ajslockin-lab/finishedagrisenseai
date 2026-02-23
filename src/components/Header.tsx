@@ -1,6 +1,7 @@
 "use client";
 
 import { Leaf, UserCircle, MapPin, Sparkles } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { useSensors } from '@/context/SensorContext';
 import Link from 'next/link';
 
@@ -16,6 +17,7 @@ export function Header() {
         <div className="space-y-0.5">
           <div className="flex items-center gap-1.5">
             <h1 className="text-xl font-black text-primary leading-none tracking-tighter">{t('header_title')}</h1>
+            <Badge variant="outline" className="text-[7px] px-1.5 py-0 border-primary/20 text-primary/60 font-black h-fit uppercase tracking-tighter">DECA IBP 2026</Badge>
             <Sparkles className="w-3.5 h-3.5 text-accent animate-pulse" />
           </div>
           <div className="flex items-center gap-1 text-[9px] text-muted-foreground font-black uppercase tracking-[0.2em]">

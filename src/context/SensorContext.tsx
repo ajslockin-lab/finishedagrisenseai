@@ -85,7 +85,7 @@ export const SensorProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         const moistureDelta = (Math.random() - 0.5) * 0.5;
         const tempDelta = (Math.random() - 0.5) * 0.2;
         const phDelta = (Math.random() - 0.5) * 0.05;
-        
+
         let nextNutrients = prev.nutrientLevel;
         if (Math.random() > 0.98) {
           const levels: NutrientLevel[] = ['High', 'Medium', 'Low'];
@@ -100,7 +100,7 @@ export const SensorProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         };
       });
       setLastUpdated(new Date());
-    }, 4000);
+    }, 2000);
 
     return () => clearInterval(interval);
   }, []);

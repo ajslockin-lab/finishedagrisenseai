@@ -1,68 +1,109 @@
 "use client";
 
+import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { CloudRain, Droplets, Wind, Eye, Thermometer } from 'lucide-react';
+import { CloudRain, Droplets, Wind, Eye, Thermometer, WifiOff, RefreshCw } from 'lucide-react';
 import { useSensors } from '@/context/SensorContext';
 import { cn } from '@/lib/utils';
+import { getWeatherForecast, type WeatherData } from './actions';
 
-const buildForecast = () => {
-  const templates = [
-    { icon: '☀️', temp: 28, low: 21, rain: '10%', cond: 'Sunny', humidity: 52, wind: 11, visibility: 10 },
-    { icon: '☀️', temp: 29, low: 22, rain: '10%', cond: 'Ideal', humidity: 50, wind: 9, visibility: 10 },
-    { icon: '⛅', temp: 27, low: 21, rain: '30%', cond: 'Partly Cloudy', humidity: 61, wind: 14, visibility: 8 },
-    { icon: '☁️', temp: 26, low: 20, rain: '70%', cond: 'Cloudy', humidity: 74, wind: 18, visibility: 5 },
-    { icon: '🌧️', temp: 24, low: 19, rain: '85%', cond: 'Rain', humidity: 88, wind: 22, visibility: 3 },
-    { icon: '🌧️', temp: 25, low: 20, rain: '85%', cond: 'Showers', humidity: 85, wind: 19, visibility: 4 },
-    { icon: '⛅', temp: 26, low: 20, rain: '30%', cond: 'Clearing', humidity: 65, wind: 13, visibility: 7 },
-    { icon: '☀️', temp: 29, low: 22, rain: '5%', cond: 'Sunny', humidity: 48, wind: 10, visibility: 10 },
-  ];
-  const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  const today = new Date();
-  return templates.map((t, i) => {
-    const d = new Date(today);
-    d.setDate(today.getDate() + i);
-    const label = i === 0 ? 'Today' : i === 1 ? 'Tomorrow' : `${days[d.getDay()]}, ${months[d.getMonth()]} ${d.getDate()}`;
-    return { ...t, day: label, isIdeal: t.cond === 'Sunny' || t.cond === 'Ideal' };
-  });
+const DEFAULT_FORECAST: WeatherData = {
+  current: { icon: '☀️', temp: 28, low: 21, rain: '10%', cond: 'Sunny', humidity: 52, wind: 11, visibility: 10 },
+  daily: [
+    { day: 'Today', icon: '☀️', temp: 28, low: 21, rain: '10%', cond: 'Sunny', isIdeal: true },
+    { day: 'Tomorrow', icon: '☀️', temp: 29, low: 22, rain: '10%', cond: 'Ideal', isIdeal: true },
+    { day: 'Tue', icon: '⛅', temp: 27, low: 21, rain: '30%', cond: 'Partly Cloudy', isIdeal: false },
+    { day: 'Wed', icon: '☁️', temp: 26, low: 20, rain: '70%', cond: 'Cloudy', isIdeal: false },
+    { day: 'Thu', icon: '🌧️', temp: 24, low: 19, rain: '85%', cond: 'Rain', isIdeal: false },
+    { day: 'Fri', icon: '🌧️', temp: 25, low: 20, rain: '85%', cond: 'Showers', isIdeal: false },
+    { day: 'Sat', icon: '⛅', temp: 26, low: 20, rain: '30%', cond: 'Clearing', isIdeal: false },
+  ]
 };
 
 export default function WeatherForecast() {
-  const { settings } = useSensors();
-  const forecast = buildForecast();
-  const today = forecast[0];
-  const upcoming = forecast.slice(1);
-  const idealDays = forecast.filter(f => f.isIdeal).slice(0, 3);
+  const { settings, t } = useSensors();
+  const [weather, setWeather] = useState<WeatherData>(DEFAULT_FORECAST);
+  const [loading, setLoading] = useState(true);
+  const [isOffline, setIsOffline] = useState(false);
+
+  useEffect(() => {
+    handleRefresh();
+  }, [settings.location]);
+
+  const handleRefresh = async () => {
+    setLoading(true);
+    setIsOffline(false);
+
+    if (typeof window !== 'undefined' && !window.navigator.onLine) {
+      setWeather(DEFAULT_FORECAST);
+      setIsOffline(true);
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const data = await getWeatherForecast(settings.location);
+      setWeather(data);
+    } catch (error) {
+      console.error('Failed to fetch real weather:', error);
+      setWeather(DEFAULT_FORECAST);
+      setIsOffline(true);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const today = weather.current;
+  const upcoming = weather.daily.slice(1);
+  const idealDays = weather.daily.filter(f => f.isIdeal).slice(0, 3);
 
   return (
     <div className="space-y-6 pb-24 animate-in fade-in slide-in-from-bottom-6 duration-700">
 
+      {/* Header & Status */}
+      <div className="flex items-center justify-between px-1">
+        <h2 className="text-2xl font-black text-primary">{t('more_weather')}</h2>
+        {isOffline && (
+          <div className="flex items-center gap-2 bg-orange-500/10 text-orange-600 px-3 py-1 rounded-full border border-orange-500/20">
+            <WifiOff className="w-3 h-3" />
+            <span className="text-[10px] font-black uppercase tracking-widest">{t('common_offline_demo')}</span>
+          </div>
+        )}
+      </div>
+
       {/* Hero current weather card */}
-      <section className="relative overflow-hidden rounded-[2.5rem] p-7 text-white shadow-premium border-none"
+      <section className="relative overflow-hidden rounded-[2.5rem] p-7 text-white shadow-premium border-none transition-all duration-500 group"
         style={{ background: 'linear-gradient(135deg, #1B4D2E 0%, #2E7D32 60%, #388E3C 100%)' }}>
+
+        {loading && (
+          <div className="absolute inset-0 z-20 bg-black/10 backdrop-blur-sm flex items-center justify-center">
+            <RefreshCw className="w-8 h-8 animate-spin opacity-50" />
+          </div>
+        )}
+
         <div className="relative z-10 space-y-6">
           <div className="flex items-start justify-between">
             <div className="space-y-1">
-              <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/60">Current Conditions</p>
+              <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/60">{t('weather_conditions')}</p>
               <p className="text-sm font-bold text-white/80">{settings.location}</p>
             </div>
-            <div className="text-6xl drop-shadow-2xl">{today.icon}</div>
+            <div className="text-6xl drop-shadow-2xl group-hover:scale-110 transition-transform duration-500">{today.icon}</div>
           </div>
 
           <div className="flex items-end gap-3">
             <span className="text-8xl font-black tracking-tighter leading-none">{today.temp}°</span>
             <div className="pb-3 space-y-0.5">
               <p className="text-lg font-bold text-white/90">{today.cond}</p>
-              <p className="text-xs text-white/50 font-bold">Low {today.low}°C tonight</p>
+              <p className="text-xs text-white/50 font-bold">{t('weather_low')} {today.low}°C {t('weather_tonight')}</p>
             </div>
           </div>
 
           <div className="grid grid-cols-4 gap-2 pt-4 border-t border-white/20">
             {[
-              { icon: CloudRain, label: 'Rain', val: today.rain },
-              { icon: Droplets, label: 'Humidity', val: `${today.humidity}%` },
-              { icon: Wind, label: 'Wind', val: `${today.wind} km/h` },
-              { icon: Eye, label: 'Visibility', val: `${today.visibility} km` },
+              { icon: CloudRain, label: t('weather_rain'), val: today.rain },
+              { icon: Droplets, label: t('weather_humidity'), val: `${today.humidity}%` },
+              { icon: Wind, label: t('weather_wind'), val: `${today.wind} km/h` },
+              { icon: Eye, label: t('weather_visibility'), val: `${today.visibility} km` },
             ].map(({ icon: Icon, label, val }) => (
               <div key={label} className="text-center space-y-1.5">
                 <Icon className="w-4 h-4 mx-auto opacity-60" />
@@ -81,7 +122,7 @@ export default function WeatherForecast() {
         <Card className="border-none shadow-sm bg-emerald-500/10 rounded-[2rem] border border-emerald-500/20 overflow-hidden">
           <CardContent className="p-5 space-y-3">
             <p className="text-[10px] font-black uppercase tracking-[0.25em] text-emerald-700 dark:text-emerald-400">
-              🌱 Best Days to Farm
+              🌱 {t('weather_best_days')}
             </p>
             <div className="space-y-2">
               {idealDays.map((f, i) => (
@@ -89,7 +130,7 @@ export default function WeatherForecast() {
                   <span className="text-xs font-bold">{f.icon} {f.day}</span>
                   <div className="flex items-center gap-2">
                     <span className="text-xs text-muted-foreground">{f.temp}°C</span>
-                    <span className="text-[10px] font-black text-emerald-600 bg-emerald-500/10 px-2 py-0.5 rounded-full">✓ Ideal</span>
+                    <span className="text-[10px] font-black text-emerald-600 bg-emerald-500/10 px-2 py-0.5 rounded-full">✓ {t('weather_ideal')}</span>
                   </div>
                 </div>
               ))}
@@ -101,11 +142,11 @@ export default function WeatherForecast() {
 
       {/* 7-day forecast */}
       <section className="space-y-3">
-        <p className="text-[10px] font-black uppercase tracking-[0.25em] text-primary px-2">7-Day Outlook</p>
+        <p className="text-[10px] font-black uppercase tracking-[0.25em] text-primary px-2">{t('weather_7day')}</p>
         <div className="space-y-2">
           {upcoming.map((item, i) => (
             <Card key={i} className={cn(
-              "border-none shadow-sm rounded-[1.5rem] overflow-hidden transition-all",
+              "border-none shadow-sm rounded-[1.5rem] overflow-hidden transition-all hover:scale-[1.02]",
               item.isIdeal ? "bg-primary/5 border border-primary/10" : "bg-card/40 backdrop-blur-md border border-white/10"
             )}>
               <CardContent className="p-4 flex items-center gap-4">
@@ -116,7 +157,7 @@ export default function WeatherForecast() {
                 </div>
                 <div className="text-right space-y-0.5">
                   <p className="text-sm font-black">{item.temp}°C</p>
-                  <p className="text-[9px] text-blue-500 font-bold">Rain {item.rain}</p>
+                  <p className="text-[9px] text-blue-500 font-bold">{t('weather_rain')} {item.rain}</p>
                 </div>
               </CardContent>
             </Card>
@@ -128,7 +169,7 @@ export default function WeatherForecast() {
       <div className="bg-primary/5 p-5 rounded-[1.5rem] border border-primary/10 flex items-start gap-3">
         <span className="text-xl">💡</span>
         <p className="text-xs font-medium text-muted-foreground leading-relaxed">
-          Plan irrigation around rain days. The forecast shows precipitation on 2 days this week — save water by skipping those irrigation cycles.
+          {t('weather_tip')}
         </p>
       </div>
 

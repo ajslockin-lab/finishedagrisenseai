@@ -70,7 +70,7 @@ export default function Settings() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-3xl font-black text-primary">{t('settings_title')}</h2>
-          <p className="text-xs text-muted-foreground font-black uppercase tracking-[0.2em]">Profile & System</p>
+          <p className="text-xs text-muted-foreground font-black uppercase tracking-[0.2em]">{t('settings_profile_subtitle')}</p>
         </div>
         <Button variant="outline" size="icon" onClick={toggleTheme} className="rounded-2xl h-12 w-12 border-primary/20 shadow-sm bg-card/40 backdrop-blur-xl transition-all active:scale-90">
           {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
@@ -86,8 +86,8 @@ export default function Settings() {
         </CardHeader>
         <CardContent className="pt-6">
           <div className="space-y-2.5">
-            <Select 
-              value={formData.language} 
+            <Select
+              value={formData.language}
               onValueChange={(val: SupportedLanguage) => setFormData(prev => ({ ...prev, language: val }))}
             >
               <SelectTrigger className="bg-muted/50 border-none rounded-2xl h-14 px-5 text-sm font-medium">
@@ -110,9 +110,9 @@ export default function Settings() {
         </CardHeader>
         <CardContent className="space-y-6 pt-6">
           <div className="space-y-2.5">
-            <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest px-1">Main Crop</Label>
-            <Select 
-              value={formData.cropType} 
+            <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest px-1">{t('settings_main_crop')}</Label>
+            <Select
+              value={formData.cropType}
               onValueChange={(val) => setFormData(prev => ({ ...prev, cropType: val }))}
             >
               <SelectTrigger className="bg-muted/50 border-none rounded-2xl h-14 px-5 text-sm font-medium">
@@ -125,9 +125,9 @@ export default function Settings() {
           </div>
 
           <div className="space-y-2.5">
-            <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest px-1">Farm Location</Label>
-            <Select 
-              value={formData.location} 
+            <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest px-1">{t('settings_location_label')}</Label>
+            <Select
+              value={formData.location}
               onValueChange={(val) => setFormData(prev => ({ ...prev, location: val }))}
             >
               <SelectTrigger className="bg-muted/50 border-none rounded-2xl h-14 px-5 text-sm font-medium">
@@ -152,9 +152,9 @@ export default function Settings() {
           {Object.entries(formData.notifications).map(([key, value]) => (
             <div key={key} className="flex items-center justify-between group">
               <div className="space-y-0.5">
-                <Label className="text-xs font-black capitalize group-hover:text-primary transition-colors">{key} Alerts</Label>
+                <Label className="text-xs font-black capitalize group-hover:text-primary transition-colors">{key} {t('settings_alerts')}</Label>
               </div>
-              <Switch 
+              <Switch
                 checked={value}
                 onCheckedChange={(val) => setFormData(p => ({ ...p, notifications: { ...p.notifications, [key]: val } }))}
                 className="data-[state=checked]:bg-primary"

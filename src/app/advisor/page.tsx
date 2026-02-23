@@ -28,13 +28,25 @@ export default function AIAdvisor() {
   const { sensors, settings, t } = useSensors();
   const [recommendations, setRecommendations] = useState<GeneratePersonalizedRecommendationsOutput>([]);
   const [loadingRecs, setLoadingRecs] = useState(false);
-  const [chatMessages, setChatMessages] = useState<{ role: 'user' | 'bot'; text: string }[]>([
-    { role: 'bot', text: 'Hello! I am your AgriSense advisor. How can I help you with your farm today?' }
-  ]);
+  const [chatMessages, setChatMessages] = useState<{ role: 'user' | 'bot'; text: string }[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const [mounted, setMounted] = useState(false);
+
+  // Localize initial message
+  useEffect(() => {
+    if (chatMessages.length === 0) {
+      setChatMessages([{ role: 'bot', text: t('advisor_welcome') }]);
+    }
+  }, [t]);
+
+  // If language changes, we might want to refresh the initial message if it's the only one
+  useEffect(() => {
+    if (chatMessages.length === 1 && chatMessages[0].role === 'bot') {
+      setChatMessages([{ role: 'bot', text: t('advisor_welcome') }]);
+    }
+  }, [settings.language, t]);
 
   // AI can return arbitrary emoji strings; enforce a friendly, small allowlist so UI stays consistent.
   const getSafeIcon = (icon: string) => {

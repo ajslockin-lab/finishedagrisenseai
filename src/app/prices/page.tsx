@@ -57,7 +57,7 @@ const pricesByState: Record<string, any[]> = {
 };
 
 export default function MarketPrices() {
-  const { settings } = useSensors();
+  const { settings, t } = useSensors();
   const state = settings.location.split(', ')[1] || 'Punjab';
   const currentPrices = pricesByState[state] || pricesByState['Punjab'];
   const boomingCount = trendingCrops.filter(c => c.status === 'booming').length;
@@ -67,8 +67,8 @@ export default function MarketPrices() {
     <div className="space-y-6 pb-24">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-primary">Market Intelligence</h2>
-          <p className="text-sm text-muted-foreground">Real-time mandi rates & AI forecasts</p>
+          <h2 className="text-2xl font-bold text-primary">{t('prices_title')}</h2>
+          <p className="text-sm text-muted-foreground">{t('prices_subtitle')}</p>
         </div>
         <div className="bg-primary/10 p-2 rounded-full">
           <TrendingUp className="w-6 h-6 text-primary" />
@@ -77,9 +77,9 @@ export default function MarketPrices() {
 
       <Tabs defaultValue="trends" className="w-full">
         <TabsList className="grid w-full grid-cols-3 bg-muted/50 p-1 mb-6">
-          <TabsTrigger value="trends" className="text-xs font-bold">🔥 Market Trends</TabsTrigger>
-          <TabsTrigger value="prices" className="text-xs font-bold">💰 Local Prices</TabsTrigger>
-          <TabsTrigger value="profit" className="text-xs font-bold">✨ Profit Guide</TabsTrigger>
+          <TabsTrigger value="trends" className="text-xs font-bold">🔥 {t('prices_tab_trends')}</TabsTrigger>
+          <TabsTrigger value="prices" className="text-xs font-bold">💰 {t('prices_tab_local')}</TabsTrigger>
+          <TabsTrigger value="profit" className="text-xs font-bold">✨ {t('prices_tab_profit')}</TabsTrigger>
         </TabsList>
 
         {/* --- TAB 1: MARKET TRENDS --- */}
@@ -89,17 +89,17 @@ export default function MarketPrices() {
           <div className="grid grid-cols-2 gap-3">
             <div className="bg-green-50 dark:bg-green-950/40 border border-green-100 dark:border-green-900/50 p-3 rounded-xl flex flex-col items-center justify-center text-center space-y-1">
               <span className="text-2xl font-black text-green-600 dark:text-green-500">{boomingCount}</span>
-              <span className="text-xs font-bold text-green-800 dark:text-green-400 uppercase tracking-wide">🚀 Booming Crops</span>
+              <span className="text-xs font-bold text-green-800 dark:text-green-400 uppercase tracking-wide">🚀 {t('prices_booming')}</span>
             </div>
             <div className="bg-red-50 dark:bg-red-950/40 border border-red-100 dark:border-red-900/50 p-3 rounded-xl flex flex-col items-center justify-center text-center space-y-1">
               <span className="text-2xl font-black text-red-600 dark:text-red-500">{decliningCount}</span>
-              <span className="text-xs font-bold text-red-800 dark:text-red-400 uppercase tracking-wide">📉 Declining Crops</span>
+              <span className="text-xs font-bold text-red-800 dark:text-red-400 uppercase tracking-wide">📉 {t('prices_declining')}</span>
             </div>
           </div>
 
           {/* Trending List */}
           <div className="space-y-3">
-            <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-widest pl-1">Market Movers</h3>
+            <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-widest pl-1">{t('prices_movers')}</h3>
             {trendingCrops.map((crop, i) => (
               <Card key={i} className={`border-l-4 shadow-sm overflow-hidden ${crop.status === 'booming' ? 'border-l-green-500' :
                 crop.status === 'declining' ? 'border-l-red-500' : 'border-l-yellow-500'
@@ -132,12 +132,12 @@ export default function MarketPrices() {
 
           <div className="flex items-center gap-2 bg-white dark:bg-card px-3 py-2 rounded-full border border-border/50 shadow-sm w-fit mx-auto">
             <MapPin className="w-3 h-3 text-primary" />
-            <span className="text-[10px] font-bold text-muted-foreground">Mandi prices — {settings.location}</span>
+            <span className="text-[10px] font-bold text-muted-foreground">{t('prices_mandi_prices')} — {settings.location}</span>
           </div>
 
           <Card className="border-none shadow-sm overflow-hidden">
             <CardHeader className="pb-0">
-              <CardTitle className="text-sm font-bold">Price Trend (Last 6 Days)</CardTitle>
+              <CardTitle className="text-sm font-bold">{t('prices_chart_title')}</CardTitle>
             </CardHeader>
             <CardContent className="p-2 h-[220px]">
               <ResponsiveContainer width="100%" height="100%">
@@ -183,43 +183,43 @@ export default function MarketPrices() {
                 <Sparkles className="w-6 h-6 text-primary" />
               </div>
               <div>
-                <h3 className="font-bold text-lg text-primary">AI Profit Calculator</h3>
+                <h3 className="font-bold text-lg text-primary">{t('prices_ai_calc')}</h3>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Based on your soil health and current market trends, here is your personalized recommendation.
+                  {t('prices_reco_desc')}
                 </p>
               </div>
               <Button className="w-full font-bold shadow-lg shadow-primary/20">
-                Generate Report
+                {t('prices_gen_report')}
               </Button>
             </CardContent>
           </Card>
 
           <div className="space-y-3">
-            <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-widest pl-1">Best Opportunities</h3>
+            <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-widest pl-1">{t('prices_best_opp')}</h3>
 
             <div className="p-4 rounded-xl bg-orange-50 dark:bg-orange-950/30 border border-orange-100 dark:border-orange-900/50 space-y-2">
               <div className="flex items-center gap-2">
                 <Sprout className="w-5 h-5 text-orange-600 dark:text-orange-500" />
-                <h4 className="font-bold text-orange-800 dark:text-orange-400">Switch to Maize</h4>
+                <h4 className="font-bold text-orange-800 dark:text-orange-400">{t('prices_maize_switch' as any)}</h4>
               </div>
               <p className="text-xs text-orange-900/70 dark:text-orange-200/70 leading-relaxed">
-                Wheat prices are stabilizing, but Maize demand is projected to rise by 15% next month due to poultry feed shortages.
+                {t('prices_maize_desc' as any)}
               </p>
               <Badge variant="secondary" className="bg-white/50 dark:bg-black/20 text-orange-800 dark:text-orange-400 border-orange-200 dark:border-orange-800">
-                Potential +₹4,500/acre
+                {t('prices_profit_acre' as any)}
               </Badge>
             </div>
 
             <div className="p-4 rounded-xl bg-blue-50 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900/50 space-y-2">
               <div className="flex items-center gap-2">
                 <Coins className="w-5 h-5 text-blue-600 dark:text-blue-500" />
-                <h4 className="font-bold text-blue-800 dark:text-blue-400">Hold Your Cotton</h4>
+                <h4 className="font-bold text-blue-800 dark:text-blue-400">{t('prices_cotton_hold' as any)}</h4>
               </div>
               <p className="text-xs text-blue-900/70 dark:text-blue-200/70 leading-relaxed">
-                Global cotton supply is tight. Holding your stock for another 2 weeks could yield better returns.
+                {t('prices_cotton_desc' as any)}
               </p>
               <Badge variant="secondary" className="bg-white/50 dark:bg-black/20 text-blue-800 dark:text-blue-400 border-blue-200 dark:border-blue-800">
-                Projected +8% Value
+                {t('prices_cotton_proj' as any)}
               </Badge>
             </div>
 

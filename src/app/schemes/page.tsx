@@ -74,7 +74,7 @@ export default function GovtSchemes() {
           <Landmark className="w-6 h-6" />
           {t('schemes_title')}
         </h2>
-        <p className="text-[10px] text-muted-foreground font-black uppercase tracking-widest mt-1">Subsidies & Central Support</p>
+        <p className="text-[10px] text-muted-foreground font-black uppercase tracking-widest mt-1">{t('schemes_subtitle')}</p>
       </div>
 
       <div className="grid gap-4">
@@ -113,7 +113,7 @@ export default function GovtSchemes() {
                     className="flex items-center gap-1.5 text-[9px] font-black text-primary bg-primary/5 px-3 py-1.5 rounded-full w-fit hover:bg-primary/10 transition-colors"
                   >
                     <Phone className="w-3 h-3" />
-                    Helpline: {scheme.helpline}
+                    {t('schemes_helpline_label')}: {scheme.helpline}
                   </a>
                 )}
               </CardContent>
@@ -126,13 +126,13 @@ export default function GovtSchemes() {
       <a href="https://locator.csccloud.in" target="_blank" rel="noopener noreferrer">
         <div className="bg-primary p-6 rounded-[2rem] text-white shadow-xl relative overflow-hidden active:scale-[0.98] transition-all">
           <div className="relative z-10 space-y-3">
-            <h3 className="text-lg font-black uppercase tracking-wider">Need Help Applying?</h3>
+            <h3 className="text-lg font-black uppercase tracking-wider">{t('schemes_help_title')}</h3>
             <p className="text-xs font-medium opacity-80 leading-relaxed">
-              Visit your nearest Common Service Center (CSC) or contact your local Agriculture Officer for verification and form filling assistance.
+              {t('schemes_help_desc')}
             </p>
             <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest bg-white/10 px-4 py-2 rounded-full w-fit">
               <ExternalLink className="w-3 h-3" />
-              Find Nearest CSC
+              {t('schemes_find_csc')}
             </div>
           </div>
           <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2" />
