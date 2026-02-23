@@ -10,6 +10,7 @@ import { useSensors, type SupportedLanguage } from '@/context/SensorContext';
 import { useTheme } from '@/context/ThemeContext';
 import { useToast } from '@/hooks/use-toast';
 import { Save, Database, Bell, Moon, Sun, Languages } from 'lucide-react';
+import { NotificationSettings } from '@/components/NotificationSettings';
 
 const locations = [
   // North India
@@ -163,6 +164,8 @@ export default function Settings() {
           ))}
         </CardContent>
       </Card>
+
+      <NotificationSettings />
 
       <div className="fixed bottom-24 left-6 right-6 max-w-md mx-auto z-40">
         <Button onClick={handleSave} className="w-full h-16 bg-primary hover:bg-primary/90 shadow-[0_15px_30px_rgba(56,102,65,0.4)] rounded-2xl font-black text-lg flex items-center justify-center gap-3 transition-all active:scale-95">

@@ -57,14 +57,14 @@ export class NotificationService {
             return;
         }
 
-        const defaultOptions: NotificationOptions = {
+        const defaultOptions = {
             icon: '/icons/icon-192x192.png',
             badge: '/icons/icon-96x96.png',
             vibrate: [200, 100, 200],
             tag: 'agrisense',
             requireInteraction: false,
             ...options,
-        };
+        } as any;
 
         if (this.registration) {
             await this.registration.showNotification(title, defaultOptions);
@@ -95,7 +95,7 @@ export class NotificationService {
                 userVisibleOnly: true,
                 applicationServerKey: this.urlBase64ToUint8Array(
                     process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || ''
-                ),
+                ) as any,
             });
 
             console.log('Push subscription successful:', subscription);
@@ -131,7 +131,7 @@ export class NotificationService {
                 { action: 'view', title: 'View Market' },
                 { action: 'dismiss', title: 'Dismiss' }
             ],
-        });
+        } as any);
     }
 
     async notifyWeatherAlert(message: string) {

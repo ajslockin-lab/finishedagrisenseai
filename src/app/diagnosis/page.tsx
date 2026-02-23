@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Camera, Upload, ShieldCheck, AlertTriangle, RefreshCw, Leaf, Sparkles, WifiOff, X } from 'lucide-react';
 import { useSensors } from '@/context/SensorContext';
 import { diagnoseCrop } from './actions';
@@ -109,7 +110,15 @@ export default function CropDiagnosis() {
   return (
     <div className="space-y-6 pb-24 animate-in fade-in slide-in-from-bottom-6 duration-700">
       <div className="pt-2">
-        <h2 className="text-3xl font-black text-primary leading-tight">{t('scan_title')}</h2>
+        <div className="flex items-center justify-between mb-2">
+          <h2 className="text-3xl font-black text-primary leading-tight">{t('scan_title')}</h2>
+          <Badge variant="outline" className={cn(
+            "text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full border-primary/20",
+            isOfflineResult ? "bg-orange-500/10 text-orange-600 border-orange-500/20" : "bg-primary/10 text-primary border-primary/20"
+          )}>
+            {isOfflineResult ? "Demo Mode" : "Live AI Ready"}
+          </Badge>
+        </div>
         <p className="text-muted-foreground font-medium">{t('scan_subtitle')}</p>
       </div>
 
@@ -142,13 +151,20 @@ export default function CropDiagnosis() {
             </Card>
           </div>
 
-          <div className="bg-primary/5 p-5 rounded-[2rem] border border-primary/10 flex items-start gap-3">
-            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-              <span className="text-lg">💡</span>
+          <div className="bg-primary/5 p-5 rounded-[2rem] border border-primary/10 flex flex-col gap-3">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                <span className="text-lg">💡</span>
+              </div>
+              <p className="text-xs font-medium text-muted-foreground leading-relaxed">
+                AgriSense AI analyses your crop photo to identify diseases, nutrient deficiencies, and pests with over 94% accuracy.
+              </p>
             </div>
-            <p className="text-xs font-medium text-muted-foreground leading-relaxed">
-              AgriSense AI analyses your crop photo to identify diseases, nutrient deficiencies, and pests with over 94% accuracy.
-            </p>
+
+            <div className="pt-3 border-t border-primary/10">
+              <p className="text-[10px] font-black uppercase text-primary mb-1 tracking-widest">Setup Note</p>
+              <p className="text-[9px] text-muted-foreground font-medium">To enable real-time AI diagnosis, ensure <code className="bg-primary/10 px-1 rounded">GOOGLE_GENAI_API_KEY</code> is set in your environment. Otherwise, the app uses realistic demo data.</p>
+            </div>
           </div>
         </section>
       ) : (
@@ -207,9 +223,12 @@ export default function CropDiagnosis() {
               )}>
                 <CardContent className="p-7 space-y-6">
                   {isOfflineResult && (
-                    <div className="flex items-center gap-2 bg-orange-500/10 text-orange-600 px-3 py-1 rounded-full border border-orange-500/20 w-fit mb-2">
-                      <WifiOff className="w-3 h-3" />
-                      <span className="text-[10px] font-black uppercase tracking-widest">{t('common_offline_demo')}</span>
+                    <div className="flex flex-col gap-2 mb-4">
+                      <div className="flex items-center gap-2 bg-orange-500/10 text-orange-600 px-3 py-1 rounded-full border border-orange-500/20 w-fit">
+                        <WifiOff className="w-3 h-3" />
+                        <span className="text-[10px] font-black uppercase tracking-widest">Demo Result</span>
+                      </div>
+                      <p className="text-[9px] text-orange-600/70 font-bold uppercase tracking-tight ml-1">Live AI disabled (Key Missing)</p>
                     </div>
                   )}
                   <div className="flex items-center justify-between">
