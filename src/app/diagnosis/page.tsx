@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Camera, Upload, ShieldCheck, AlertTriangle, RefreshCw, Leaf, Sparkles, WifiOff, X } from 'lucide-react';
 import { useSensors } from '@/context/SensorContext';
-import { diagnoseCrop } from './actions';
 import type { DiagnoseCropOutput } from '@/ai/flows/diagnose-crop-disease';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
@@ -88,10 +87,21 @@ export default function CropDiagnosis() {
     }
 
     try {
-      const data = await diagnoseCrop({
-        photoDataUri: image,
-        cropType: settings.cropType,
+      const response = await fetch('/api/diagnose', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          photoDataUri: image,
+          cropType: settings.cropType,
+        }),
       });
+
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        throw new Error(err.details || err.error || `Server error ${response.status}`);
+      }
+
+      const data: DiagnoseCropOutput = await response.json();
       setResult(data);
     } catch (error: any) {
       console.error('AI diagnosis failed:', error?.message);
