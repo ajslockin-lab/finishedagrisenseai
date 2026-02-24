@@ -6,36 +6,42 @@ import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Bell, BellOff, CheckCircle2 } from 'lucide-react';
-import { notificationService } from '@/lib/notifications';
+import { useNotifications } from '@/context/NotificationContext';
+
+const PREFS_KEY = 'agrisense_notif_prefs';
+
+const DEFAULT_PREFS = {
+    priceAlerts: true,
+    weatherAlerts: true,
+    sensorAlerts: true,
+    aiRecommendations: true,
+};
 
 export function NotificationSettings() {
-    const [permission, setPermission] = useState<NotificationPermission>('default');
-    const [isEnabled, setIsEnabled] = useState(false);
+    const { permission, requestPermission, addNotification } = useNotifications();
     const [isLoading, setIsLoading] = useState(false);
+    const [prefs, setPrefs] = useState(DEFAULT_PREFS);
+
+    const isEnabled = permission === 'granted';
 
     useEffect(() => {
-        if ('Notification' in window) {
-            setPermission(Notification.permission);
-            setIsEnabled(Notification.permission === 'granted');
+        if (typeof window === 'undefined') return;
+        const saved = localStorage.getItem(PREFS_KEY);
+        if (saved) {
+            try { setPrefs({ ...DEFAULT_PREFS, ...JSON.parse(saved) }); } catch { /* ignore */ }
         }
     }, []);
+
+    const updatePref = (key: keyof typeof DEFAULT_PREFS, value: boolean) => {
+        const updated = { ...prefs, [key]: value };
+        setPrefs(updated);
+        localStorage.setItem(PREFS_KEY, JSON.stringify(updated));
+    };
 
     const handleEnableNotifications = async () => {
         setIsLoading(true);
         try {
-            const result = await notificationService.requestPermission();
-            setPermission(result);
-            setIsEnabled(result === 'granted');
-
-            if (result === 'granted') {
-                // Initialize service worker and subscribe
-                await notificationService.init();
-
-                // Show welcome notification
-                await notificationService.showNotification('Notifications Enabled! 🎉', {
-                    body: 'You will now receive important updates from AgriSense AI',
-                });
-            }
+            await requestPermission();
         } catch (error) {
             console.error('Failed to enable notifications:', error);
         } finally {
@@ -43,8 +49,13 @@ export function NotificationSettings() {
         }
     };
 
-    const testNotification = async () => {
-        await notificationService.notifyPriceAlert('Wheat', 2350, '+5.2%');
+    const testNotification = () => {
+        addNotification({
+            title: '📈 Price Alert: Wheat',
+            body: 'Wheat price up 5.2% to ₹2,350/quintal in your market.',
+            icon: '📈',
+            url: '/prices',
+        });
     };
 
     return (
@@ -73,22 +84,11 @@ export function NotificationSettings() {
                             Enable notifications to receive real-time updates about:
                         </p>
                         <ul className="text-sm space-y-2 text-muted-foreground">
-                            <li className="flex items-center gap-2">
-                                <span className="text-primary">•</span>
-                                Price changes in your local market
-                            </li>
-                            <li className="flex items-center gap-2">
-                                <span className="text-primary">•</span>
-                                Weather alerts and warnings
-                            </li>
-                            <li className="flex items-center gap-2">
-                                <span className="text-primary">•</span>
-                                Sensor readings and anomalies
-                            </li>
-                            <li className="flex items-center gap-2">
-                                <span className="text-primary">•</span>
-                                AI-powered crop recommendations
-                            </li>
+                            {['Price changes in your local market', 'Weather alerts and warnings', 'Sensor readings and anomalies', 'AI-powered crop recommendations'].map((item) => (
+                                <li key={item} className="flex items-center gap-2">
+                                    <span className="text-primary">•</span> {item}
+                                </li>
+                            ))}
                         </ul>
                         <Button
                             onClick={handleEnableNotifications}
@@ -105,28 +105,22 @@ export function NotificationSettings() {
                     </div>
                 ) : (
                     <div className="space-y-3">
-                        <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
-                            <span className="text-sm font-medium">Price Alerts</span>
-                            <Switch defaultChecked />
-                        </div>
-                        <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
-                            <span className="text-sm font-medium">Weather Alerts</span>
-                            <Switch defaultChecked />
-                        </div>
-                        <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
-                            <span className="text-sm font-medium">Sensor Alerts</span>
-                            <Switch defaultChecked />
-                        </div>
-                        <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
-                            <span className="text-sm font-medium">AI Recommendations</span>
-                            <Switch defaultChecked />
-                        </div>
-                        <Button
-                            onClick={testNotification}
-                            variant="outline"
-                            className="w-full"
-                        >
-                            Test Notification
+                        {([
+                            { key: 'priceAlerts', label: 'Price Alerts' },
+                            { key: 'weatherAlerts', label: 'Weather Alerts' },
+                            { key: 'sensorAlerts', label: 'Sensor Alerts' },
+                            { key: 'aiRecommendations', label: 'AI Recommendations' },
+                        ] as { key: keyof typeof DEFAULT_PREFS; label: string }[]).map(({ key, label }) => (
+                            <div key={key} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
+                                <span className="text-sm font-medium">{label}</span>
+                                <Switch
+                                    checked={prefs[key]}
+                                    onCheckedChange={(val) => updatePref(key, val)}
+                                />
+                            </div>
+                        ))}
+                        <Button onClick={testNotification} variant="outline" className="w-full">
+                            Send Test Notification
                         </Button>
                     </div>
                 )}

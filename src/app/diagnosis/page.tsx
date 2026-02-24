@@ -53,6 +53,7 @@ export default function CropDiagnosis() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<DiagnoseCropOutput | null>(null);
   const [isOfflineResult, setIsOfflineResult] = useState(false);
+  const [aiError, setAiError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -63,6 +64,7 @@ export default function CropDiagnosis() {
         setImage(reader.result as string);
         setResult(null);
         setIsOfflineResult(false);
+        setAiError(null);
       };
       reader.readAsDataURL(file);
     }
@@ -73,8 +75,9 @@ export default function CropDiagnosis() {
     setLoading(true);
     setResult(null);
     setIsOfflineResult(false);
+    setAiError(null);
 
-    // Explicit offline check for demo mode
+    // Explicit offline check — only use demo if genuinely offline
     if (typeof window !== 'undefined' && !window.navigator.onLine) {
       setTimeout(() => {
         setResult(getDemoResult(settings.cropType));
@@ -91,11 +94,8 @@ export default function CropDiagnosis() {
       });
       setResult(data);
     } catch (error: any) {
-      console.warn('AI diagnosis failed, using demo result:', error?.message);
-      // Fallback: realistic demo result
-      await new Promise(r => setTimeout(r, 1400));
-      setResult(getDemoResult(settings.cropType));
-      setIsOfflineResult(true);
+      console.error('AI diagnosis failed:', error?.message);
+      setAiError(error?.message || 'AI analysis failed. Please check your connection and try again.');
     } finally {
       setLoading(false);
     }
@@ -105,6 +105,7 @@ export default function CropDiagnosis() {
     setResult(null);
     setImage(null);
     setIsOfflineResult(false);
+    setAiError(null);
   };
 
   return (
@@ -213,6 +214,30 @@ export default function CropDiagnosis() {
               <Sparkles className="w-6 h-6" />
               {t('scan_btn')}
             </button>
+          )}
+
+          {aiError && !loading && (
+            <div className="p-5 rounded-[2rem] bg-red-500/10 border border-red-500/20 space-y-3">
+              <div className="flex items-center gap-2 text-red-600">
+                <AlertTriangle className="w-4 h-4 shrink-0" />
+                <p className="text-sm font-black uppercase tracking-widest">AI Analysis Failed</p>
+              </div>
+              <p className="text-xs text-red-600/80 font-medium leading-relaxed">{aiError}</p>
+              <div className="flex gap-2 pt-1">
+                <button
+                  onClick={handleDiagnose}
+                  className="flex-1 h-10 bg-red-600 text-white rounded-2xl font-black text-xs flex items-center justify-center gap-2"
+                >
+                  <RefreshCw className="w-3 h-3" /> Retry
+                </button>
+                <button
+                  onClick={() => { setAiError(null); setResult(getDemoResult(settings.cropType)); setIsOfflineResult(true); }}
+                  className="flex-1 h-10 bg-muted text-muted-foreground rounded-2xl font-black text-xs"
+                >
+                  Use Demo
+                </button>
+              </div>
+            </div>
           )}
 
           {result && (
