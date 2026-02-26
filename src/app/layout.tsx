@@ -2,7 +2,6 @@ import type { Metadata } from 'next';
 import './globals.css';
 import { Navigation } from '@/components/Navigation';
 import { Header } from '@/components/Header';
-import { Footer } from '@/components/Footer';
 import { Toaster } from '@/components/ui/toaster';
 import { SensorProvider } from '@/context/SensorContext';
 import { ThemeProvider } from '@/context/ThemeContext';
@@ -18,7 +17,7 @@ export const metadata: Metadata = {
     statusBarStyle: 'black-translucent',
     title: 'AgriSense AI',
   },
-  themeColor: '#1B4D2E',
+  // themeColor moved to head meta for better PWA consistency
 };
 
 export default function RootLayout({
@@ -51,7 +50,6 @@ export default function RootLayout({
                 <main className="flex-1 px-4 py-4 space-y-6 overflow-x-hidden">
                   {children}
                 </main>
-                <Footer />
                 <Navigation />
               </div>
               <Toaster />
@@ -62,10 +60,48 @@ export default function RootLayout({
         {/* Register Service Worker */}
         <Script id="sw-register" strategy="afterInteractive">{`
           if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-              navigator.serviceWorker.register('/sw.js')
-                .then(reg => console.log('[SW] Registered:', reg.scope))
-                .catch(err => console.warn('[SW] Registration failed:', err));
+            window.addEventListener('load', async () => {
+              try {
+                const reg = await navigator.serviceWorker.register('/sw.js', { updateViaCache: 'none' });
+                console.log('[SW] Registered:', reg.scope);
+
+                // Force new SW to activate immediately
+                reg.addEventListener('updatefound', () => {
+                  const newWorker = reg.installing;
+                  if (newWorker) {
+                    newWorker.addEventListener('statechange', () => {
+                      if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                        newWorker.postMessage({ type: 'SKIP_WAITING' });
+                      }
+                    });
+                  }
+                });
+
+                // Pre-warm cache for all routes on first visit
+                if (reg.active) {
+                  const routes = ['/', '/advisor', '/diagnosis', '/sensors', '/prices',
+                    '/weather', '/schemes', '/journal', '/more', '/settings', '/education', '/services', '/subscription'];
+                  const cache = await caches.open('agrisense-v3-static');
+                  await Promise.allSettled(
+                    routes.map(async route => {
+                      const existing = await cache.match(route);
+                      if (!existing) {
+                        try {
+                          const res = await fetch(route);
+                          if (res.ok) await cache.put(route, res);
+                        } catch (_) {}
+                      }
+                    })
+                  );
+                }
+              } catch (err) {
+                console.warn('[SW] Registration failed:', err);
+              }
+            });
+
+            // Reload when new SW takes over so fresh cache is used
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+              window.location.reload();
             });
           }
         `}</Script>

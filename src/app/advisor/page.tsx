@@ -6,90 +6,89 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Send, RefreshCw, User, Bot, Sparkles } from 'lucide-react';
+import { Send, RefreshCw, User, Bot, Sparkles, WifiOff } from 'lucide-react';
 import { useSensors } from '@/context/SensorContext';
 import { getPersonalizedRecommendations, askFarmingQuestion } from './actions';
+import { getOfflineChatResponse, getOfflineRecommendations, isOffline } from '@/lib/offlineAI';
 import type { GeneratePersonalizedRecommendationsOutput } from '@/ai/flows/generate-personalized-recommendations';
 import { cn } from '@/lib/utils';
 
 const languageNames: Record<string, string> = {
-  en: 'English',
-  hi: 'Hindi',
-  pb: 'Punjabi',
-  ta: 'Tamil',
-  te: 'Telugu',
-  mr: 'Marathi',
-  kn: 'Kannada',
-  bn: 'Bengali',
-  gu: 'Gujarati',
+  en: 'English', hi: 'Hindi', pb: 'Punjabi', ta: 'Tamil',
+  te: 'Telugu', mr: 'Marathi', kn: 'Kannada', bn: 'Bengali', gu: 'Gujarati',
 };
 
 export default function AIAdvisor() {
   const { sensors, settings, t } = useSensors();
   const [recommendations, setRecommendations] = useState<GeneratePersonalizedRecommendationsOutput>([]);
   const [loadingRecs, setLoadingRecs] = useState(false);
-  const [chatMessages, setChatMessages] = useState<{ role: 'user' | 'bot'; text: string }[]>([]);
+  const [offline, setOffline] = useState(false);
+  const [chatMessages, setChatMessages] = useState<{ role: 'user' | 'bot'; text: string }[]>([
+    { role: 'bot', text: 'Hello! I am your AgriSense advisor. How can I help you with your farm today?' }
+  ]);
   const [inputValue, setInputValue] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const [mounted, setMounted] = useState(false);
 
-  // Localize initial message
-  useEffect(() => {
-    if (chatMessages.length === 0) {
-      setChatMessages([{ role: 'bot', text: t('advisor_welcome') }]);
-    }
-  }, [t]);
-
-  // If language changes, we might want to refresh the initial message if it's the only one
-  useEffect(() => {
-    if (chatMessages.length === 1 && chatMessages[0].role === 'bot') {
-      setChatMessages([{ role: 'bot', text: t('advisor_welcome') }]);
-    }
-  }, [settings.language, t]);
-
-  // AI can return arbitrary emoji strings; enforce a friendly, small allowlist so UI stays consistent.
   const getSafeIcon = (icon: string) => {
-    const safeIcons = ['🌾', '🚜', '🌱', '💧', '☀️', '📈', '🛡️', '⚡', '🧪', '💡'];
+    const safeIcons = ['🌾', '🚜', '🌱', '💧', '☀️', '📈', '🛡️', '⚡', '🧪', '💡', '🌡️', '🚿'];
     const match = safeIcons.find(safe => icon?.trim().startsWith(safe));
     return match ?? '💡';
   };
 
   useEffect(() => {
     setMounted(true);
+    setOffline(isOffline());
+    const handleOnline = () => setOffline(false);
+    const handleOffline = () => setOffline(true);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
     handleRefreshRecs();
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
   }, []);
+
   const handleRefreshRecs = async () => {
     setLoadingRecs(true);
-
-    // OFFLINE FALLBACK
-    if (typeof window !== 'undefined' && !window.navigator.onLine) {
-      setTimeout(() => {
-        setRecommendations([
-          { title: 'Offline Mode: Water Crops', action: 'Your device is offline. Remember to irrigate if moisture feels low.', priority: 'Medium', icon: '💧' },
-          { title: 'Offline Mode: Pest Check', action: 'Inspect lower leaves for aphids during dry spells.', priority: 'Low', icon: '🔎' }
-        ]);
-        setLoadingRecs(false);
-      }, 500);
-      return;
-    }
-
     try {
-      const result = await getPersonalizedRecommendations({
-        soilMoisture: sensors.soilMoisture,
-        soilTemperature: sensors.soilTemperature,
-        soilPh: sensors.soilPh,
-        nutrientLevel: sensors.nutrientLevel,
-        weatherForecast: 'Mostly sunny for the next 3 days.',
-        cropType: settings.cropType,
-        location: settings.location,
-        language: languageNames[settings.language],
-      });
-      setRecommendations(result);
+      if (isOffline()) {
+        // Use offline AI immediately — no network attempt
+        const result = getOfflineRecommendations(
+          sensors.soilMoisture,
+          sensors.soilTemperature,
+          sensors.soilPh,
+          sensors.nutrientLevel,
+          settings.cropType
+        );
+        setRecommendations(result);
+        setOffline(true);
+      } else {
+        const result = await getPersonalizedRecommendations({
+          soilMoisture: sensors.soilMoisture,
+          soilTemperature: sensors.soilTemperature,
+          soilPh: sensors.soilPh,
+          nutrientLevel: sensors.nutrientLevel,
+          weatherForecast: 'Mostly sunny for the next 3 days.',
+          cropType: settings.cropType,
+          location: settings.location,
+          language: languageNames[settings.language],
+        });
+        setRecommendations(result);
+      }
     } catch (error) {
-      console.error('Error generating recommendations:', error);
-      // Failsafe Mock if API fails while technically "online"
-      setRecommendations([{ title: 'Demo Mode Active', action: 'The AI service is currently unavailable. Ensure your API key is configured or you are connected to the internet.', priority: 'Medium', icon: '⚡' }]);
+      // Network failed — fall back silently
+      const result = getOfflineRecommendations(
+        sensors.soilMoisture,
+        sensors.soilTemperature,
+        sensors.soilPh,
+        sensors.nutrientLevel,
+        settings.cropType
+      );
+      setRecommendations(result);
+      setOffline(true);
     } finally {
       setLoadingRecs(false);
     }
@@ -102,26 +101,25 @@ export default function AIAdvisor() {
     setInputValue('');
     setIsTyping(true);
 
-    if (typeof window !== 'undefined' && !window.navigator.onLine) {
-      setTimeout(() => {
-        setChatMessages(prev => [...prev, { role: 'bot', text: "(Offline Demo) I cannot reach the cloud right now, but I recommend checking your local agricultural extension office for immediate inquiries." }]);
-        setIsTyping(false);
-      }, 800);
-      return;
-    }
-
     try {
-      const response = await askFarmingQuestion({
-        question: userMsg,
-        language: languageNames[settings.language]
-      });
-      setChatMessages(prev => [...prev, { role: 'bot', text: response.answer }]);
+      if (isOffline()) {
+        // Simulate AI thinking time for realism
+        await new Promise(r => setTimeout(r, 900 + Math.random() * 600));
+        const answer = getOfflineChatResponse(userMsg);
+        setChatMessages(prev => [...prev, { role: 'bot', text: answer }]);
+      } else {
+        const response = await askFarmingQuestion({
+          question: userMsg,
+          language: languageNames[settings.language]
+        });
+        setChatMessages(prev => [...prev, { role: 'bot', text: response.answer }]);
+      }
     } catch (error) {
-      console.error('Chat error:', error);
-      setChatMessages(prev => [...prev, {
-        role: 'bot',
-        text: "(Demo) It looks like my AI backend is unavailable or missing an API key. Please check your connection or configuration."
-      }]);
+      // Network failed mid-session — fall back to offline AI
+      await new Promise(r => setTimeout(r, 600));
+      const answer = getOfflineChatResponse(userMsg);
+      setChatMessages(prev => [...prev, { role: 'bot', text: answer }]);
+      setOffline(true);
     } finally {
       setIsTyping(false);
     }
@@ -130,16 +128,26 @@ export default function AIAdvisor() {
   useEffect(() => {
     if (scrollRef.current) {
       const scrollElement = scrollRef.current.querySelector('[data-radix-scroll-area-viewport]');
-      if (scrollElement) {
-        scrollElement.scrollTop = scrollElement.scrollHeight;
-      }
+      if (scrollElement) scrollElement.scrollTop = scrollElement.scrollHeight;
     }
   }, [chatMessages, isTyping]);
 
   if (!mounted) return null;
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-3 duration-300">
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-6 duration-700 pb-24">
+
+      {/* Offline badge */}
+      {offline && (
+        <div className="flex items-center gap-2 bg-muted/60 border border-white/10 px-4 py-2.5 rounded-2xl">
+          <WifiOff className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+          <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">
+            Offline mode — smart demo AI active
+          </p>
+        </div>
+      )}
+
+      {/* Recommendations */}
       <section className="space-y-4">
         <div className="flex items-center justify-between">
           <div>
@@ -148,7 +156,12 @@ export default function AIAdvisor() {
               {t('advisor_title')} ({languageNames[settings.language]})
             </h2>
           </div>
-          <Button onClick={handleRefreshRecs} variant="ghost" size="sm" className="h-9 gap-2 rounded-xl text-primary hover:bg-primary/10 transition-all active:scale-95" disabled={loadingRecs}>
+          <Button
+            onClick={handleRefreshRecs}
+            variant="ghost" size="sm"
+            className="h-9 gap-2 rounded-xl text-primary hover:bg-primary/10 transition-all active:scale-95"
+            disabled={loadingRecs}
+          >
             <RefreshCw className={cn("w-3 h-3", loadingRecs && "animate-spin")} />
             {t('common_refresh')}
           </Button>
@@ -164,9 +177,10 @@ export default function AIAdvisor() {
                 <div className="space-y-1.5 flex-1">
                   <div className="flex items-center justify-between">
                     <h3 className="font-bold text-sm text-foreground">{rec.title}</h3>
-                    <Badge variant={rec.priority === 'High' ? 'destructive' : 'secondary'} className={cn(
-                      "text-[9px] font-black uppercase tracking-tight px-2 py-0.5 rounded-md"
-                    )}>
+                    <Badge
+                      variant={rec.priority === 'High' ? 'destructive' : 'secondary'}
+                      className="text-[9px] font-black uppercase tracking-tight px-2 py-0.5 rounded-md"
+                    >
                       {rec.priority}
                     </Badge>
                   </div>
@@ -183,10 +197,13 @@ export default function AIAdvisor() {
         </div>
       </section>
 
+      {/* Chat */}
       <section className="space-y-4">
         <div>
           <h2 className="text-2xl font-black text-primary">{t('advisor_chat_title')}</h2>
-          <p className="text-[10px] text-muted-foreground font-black uppercase tracking-[0.2em]">Speak in {languageNames[settings.language]}</p>
+          <p className="text-[10px] text-muted-foreground font-black uppercase tracking-[0.2em]">
+            {offline ? 'Smart demo mode — ask any farming question' : `Speak in ${languageNames[settings.language]}`}
+          </p>
         </div>
 
         <Card className="border-none shadow-2xl bg-card/60 backdrop-blur-xl overflow-hidden flex flex-col h-[480px] rounded-[2.5rem] border border-white/20">
@@ -198,7 +215,7 @@ export default function AIAdvisor() {
                     "w-9 h-9 rounded-2xl flex items-center justify-center shrink-0 shadow-lg",
                     msg.role === 'user' ? "bg-primary text-white" : "bg-secondary text-primary"
                   )}>
-                    {msg.role === 'user' ? <User className="w-4.5 h-4.5" /> : <Bot className="w-4.5 h-4.5" />}
+                    {msg.role === 'user' ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
                   </div>
                   <div className={cn(
                     "p-4 rounded-[1.5rem] text-sm max-w-[85%] leading-relaxed shadow-sm font-medium",
@@ -213,7 +230,7 @@ export default function AIAdvisor() {
               {isTyping && (
                 <div className="flex gap-3 animate-in fade-in duration-300">
                   <div className="w-9 h-9 rounded-2xl bg-secondary flex items-center justify-center shrink-0">
-                    <Bot className="w-4.5 h-4.5 text-primary" />
+                    <Bot className="w-4 h-4 text-primary" />
                   </div>
                   <div className="bg-secondary/50 p-4 rounded-[1.5rem] rounded-tl-none text-xs flex gap-1.5 shadow-sm">
                     <span className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce" />
@@ -227,13 +244,17 @@ export default function AIAdvisor() {
 
           <div className="p-4 bg-background/40 border-t border-white/10 flex gap-2 backdrop-blur-2xl">
             <Input
-              placeholder={`${t('advisor_ask_placeholder')} ${languageNames[settings.language]}...`}
+              placeholder={offline ? "Ask about irrigation, pests, diseases..." : `${t('advisor_ask_placeholder')} ${languageNames[settings.language]}...`}
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
               className="flex-1 border-none bg-muted/50 focus-visible:ring-primary rounded-2xl h-14 px-5 text-sm font-medium"
             />
-            <Button size="icon" onClick={handleSendMessage} className="bg-primary hover:bg-primary/90 rounded-2xl h-14 w-14 shrink-0 shadow-xl transition-all active:scale-90">
+            <Button
+              size="icon"
+              onClick={handleSendMessage}
+              className="bg-primary hover:bg-primary/90 rounded-2xl h-14 w-14 shrink-0 shadow-xl transition-all active:scale-90"
+            >
               <Send className="w-5 h-5" />
             </Button>
           </div>
