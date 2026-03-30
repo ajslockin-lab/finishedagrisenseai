@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useSensors } from '@/context/SensorContext';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 export function Navigation() {
   const pathname = usePathname();
@@ -56,16 +56,16 @@ export function Navigation() {
       {/* ═══ Desktop Sidebar ═══ */}
       <aside
         className={cn(
-          "hidden md:flex flex-col fixed left-0 top-0 bottom-0 z-50 bg-sidebar border-r border-sidebar-border transition-all duration-300",
+          "hidden md:flex flex-col fixed left-0 top-0 bottom-0 z-50 bg-[#0E120B] border-r border-border transition-all duration-300",
           collapsed ? "w-[72px]" : "w-[260px]"
         )}
       >
         {/* Logo area */}
         <div className={cn(
-          "flex items-center gap-3 px-5 h-16 border-b border-sidebar-border shrink-0",
+          "flex items-center gap-3 px-5 h-16 border-b border-border shrink-0",
           collapsed && "justify-center px-0"
         )}>
-          <div className="w-9 h-9 rounded-xl bg-primary/15 border border-primary/25 flex items-center justify-center shrink-0">
+          <div className="w-9 h-9 rounded-xl bg-primary/15 border border-primary/25 flex items-center justify-center shrink-0 shadow-glow">
             <Leaf className="w-5 h-5 text-primary" />
           </div>
           {!collapsed && (
@@ -94,8 +94,8 @@ export function Navigation() {
               className={cn(
                 "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group relative",
                 isActive(item.href)
-                  ? "bg-primary/12 text-primary"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted/50",
+                  ? "bg-primary/10 text-primary"
+                  : "text-muted-foreground hover:text-foreground hover:bg-secondary",
                 collapsed && "justify-center px-0"
               )}
             >
@@ -132,8 +132,8 @@ export function Navigation() {
               className={cn(
                 "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group",
                 isActive(item.href)
-                  ? "bg-primary/12 text-primary"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted/50",
+                  ? "bg-primary/10 text-primary"
+                  : "text-muted-foreground hover:text-foreground hover:bg-secondary",
                 collapsed && "justify-center px-0"
               )}
             >
@@ -146,14 +146,14 @@ export function Navigation() {
         </nav>
 
         {/* Collapse toggle + settings */}
-        <div className="border-t border-sidebar-border p-3 space-y-1">
+        <div className="border-t border-border p-3 space-y-1">
           <Link
             href="/settings"
             className={cn(
               "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200",
               isActive('/settings')
-                ? "bg-primary/12 text-primary"
-                : "text-muted-foreground hover:text-foreground hover:bg-muted/50",
+                ? "bg-primary/10 text-primary"
+                : "text-muted-foreground hover:text-foreground hover:bg-secondary",
               collapsed && "justify-center px-0"
             )}
           >
@@ -163,7 +163,7 @@ export function Navigation() {
           <button
             onClick={toggleCollapse}
             className={cn(
-              "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 w-full text-muted-foreground hover:text-foreground hover:bg-muted/50",
+              "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 w-full text-muted-foreground hover:text-foreground hover:bg-secondary",
               collapsed && "justify-center px-0"
             )}
           >
@@ -174,7 +174,7 @@ export function Navigation() {
       </aside>
 
       {/* ═══ Mobile Bottom Navigation ═══ */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-xl border-t border-border">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-[#0E120B]/95 backdrop-blur-xl border-t border-border">
         <div className="flex justify-around items-center py-2 px-1 max-w-lg mx-auto">
           {primaryNav.map((item) => (
             <Link

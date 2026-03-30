@@ -1,102 +1,92 @@
 "use client";
 
-import { useState, useEffect, useRef } from 'react';
-import { Droplets, Thermometer, Beaker, Leaf, CheckSquare, Square, Zap, Target, Plane, Orbit, AlertTriangle } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import {
+  Droplets, Thermometer, Beaker, Leaf, Zap, Target,
+  Plus, Check, Trash2, Cloud, TrendingUp, ArrowUpRight,
+  Sprout, Sun, Wind, ChevronRight
+} from 'lucide-react';
 import { useSensors } from '@/context/SensorContext';
 import Link from 'next/link';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
-import { motion, useScroll, useTransform, useMotionValue, useSpring } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
-// --- Types & Data ---
+// ─── Types ───
 interface Task {
   id: string;
   title: string;
   completed: boolean;
-  priority: 'PRIME' | 'SUB';
   date: string;
 }
 
 const DEFAULT_TASKS: Task[] = [
-  { id: '1', title: 'INITIATE TRIBUTARY HYDRATION SEQUENCE', completed: false, priority: 'PRIME', date: format(new Date(), 'yyyy-MM-dd') },
-  { id: '2', title: 'CALIBRATE MYCELIAL SENSOR NODE 4', completed: false, priority: 'SUB', date: format(new Date(), 'yyyy-MM-dd') },
-  { id: '3', title: 'DEPLOY UAV: SPECTRAL CANOPY ANALYSIS', completed: false, priority: 'PRIME', date: format(new Date(), 'yyyy-MM-dd') },
+  { id: '1', title: 'Check irrigation valves in sector A', completed: false, date: format(new Date(), 'yyyy-MM-dd') },
+  { id: '2', title: 'Run canopy health scan via drone', completed: false, date: format(new Date(), 'yyyy-MM-dd') },
+  { id: '3', title: 'Calibrate soil sensors for pH drift', completed: false, date: format(new Date(), 'yyyy-MM-dd') },
 ];
 
-const PRIORITIES = ['PRIME', 'SUB'] as const;
-
-// --- Animations ---
-const systemBootStagger = {
+// ─── Animations ───
+const staggerContainer = {
   hidden: { opacity: 0 },
-  visible: { transition: { staggerChildren: 0.15, delayChildren: 0.2 } }
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.08 }
+  }
 } as const;
 
-const cyberPanelReveal = {
-  hidden: { opacity: 0, y: 20, filter: 'blur(5px)' },
-  visible: { opacity: 1, y: 0, filter: 'blur(0px)', transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] } }
+const fadeUp = {
+  hidden: { opacity: 0, y: 16 },
+  visible: { 
+    opacity: 1, 
+    y: 0, 
+    transition: { duration: 0.45, ease: "easeOut" as const }
+  }
 } as const;
-
-// --- Sub-Components ---
-function ScrambleText({ text, active }: { text: string, active: boolean }) {
-  const [displayText, setDisplayText] = useState(text);
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789§±Ð£¢∞';
-
-  useEffect(() => {
-    if (!active) {
-      setDisplayText(text);
-      return;
-    }
-    let iteration = 0;
-    let interval: NodeJS.Timeout;
-    
-    interval = setInterval(() => {
-      setDisplayText(text.split('').map((letter, index) => {
-        if(index < iteration) return text[index];
-        return chars[Math.floor(Math.random() * chars.length)];
-      }).join(''));
-
-      if (iteration >= text.length) clearInterval(interval);
-      iteration += 1/3; 
-    }, 30);
-
-    return () => clearInterval(interval);
-  }, [text, active]);
-
-  return <span className="font-mono-data tracking-tighter w-full block truncate">{displayText}</span>;
-}
 
 export default function HomeDashboard() {
   const { sensors, lastUpdated, settings, t } = useSensors();
   const [mounted, setMounted] = useState(false);
   const [irrigationOn, setIrrigationOn] = useState(false);
   const [tasks, setTasks] = useState<Task[]>(DEFAULT_TASKS);
-  
-  // Sentient tracking
-  const containerRef = useRef<HTMLDivElement>(null);
-  const mouseX = useMotionValue(0);
-  const mouseY = useMotionValue(0);
-  const smoothX = useSpring(mouseX, { damping: 50, stiffness: 400 });
-  const smoothY = useSpring(mouseY, { damping: 50, stiffness: 400 });
-
-  // Scroll bindings for the topographic drift
-  const { scrollYProgress } = useScroll({ target: containerRef });
-  const yDrift = useTransform(scrollYProgress, [0, 1], ['0%', '-30%']);
-  const rotateDrift = useTransform(scrollYProgress, [0, 1], ['0deg', '5deg']);
+  const [newTaskTitle, setNewTaskTitle] = useState('');
+  const [showInput, setShowInput] = useState(false);
 
   useEffect(() => {
     setMounted(true);
-    const saved = localStorage.getItem('agrisense_tasks_cyber');
     const today = format(new Date(), 'yyyy-MM-dd');
+    const saved = localStorage.getItem('agrisense_tasks_v4');
     if (saved) {
       const parsed: Task[] = JSON.parse(saved);
-      setTasks(parsed.map(t => ({...t, completed: t.date === today ? t.completed : false, date: today})));
+      setTasks(parsed.map(t => ({ ...t, completed: t.date === today ? t.completed : false, date: today })));
     }
+    const valve = localStorage.getItem('agrisense_valve');
+    if (valve) setIrrigationOn(valve === 'true');
   }, []);
 
-  const handleMouseMove = (e: React.MouseEvent) => {
-    const { clientX, clientY } = e;
-    mouseX.set(clientX - window.innerWidth / 2);
-    mouseY.set(clientY - window.innerHeight / 2);
+  const persistTasks = (updated: Task[]) => {
+    setTasks(updated);
+    localStorage.setItem('agrisense_tasks_v4', JSON.stringify(updated));
+  };
+
+  const toggleTask = (id: string) => {
+    const today = format(new Date(), 'yyyy-MM-dd');
+    persistTasks(tasks.map(t => t.id === id ? { ...t, completed: !t.completed, date: today } : t));
+  };
+
+  const deleteTask = (id: string) => persistTasks(tasks.filter(t => t.id !== id));
+
+  const addTask = () => {
+    if (!newTaskTitle.trim()) return;
+    persistTasks([...tasks, { id: Date.now().toString(), title: newTaskTitle.trim(), completed: false, date: format(new Date(), 'yyyy-MM-dd') }]);
+    setNewTaskTitle('');
+    setShowInput(false);
+  };
+
+  const toggleValve = () => {
+    const next = !irrigationOn;
+    setIrrigationOn(next);
+    localStorage.setItem('agrisense_valve', String(next));
   };
 
   const calculateHealthScore = () => {
@@ -109,205 +99,316 @@ export default function HomeDashboard() {
   };
 
   const healthScore = calculateHealthScore();
-  const isHealthy = healthScore >= 80;
+  const completedCount = tasks.filter(t => t.completed).length;
+
+  // Status helpers
+  const getStatusDot = (score: number) => {
+    if (score >= 85) return 'optimal';
+    if (score >= 60) return 'warning';
+    return 'critical';
+  };
+
+  const getStatusLabel = (score: number) => {
+    if (score >= 85) return 'Healthy';
+    if (score >= 60) return 'Needs Attention';
+    return 'Critical';
+  };
+
+  const getSensorStatus = (val: number | string, type: string): string => {
+    if (typeof val === 'string') return val === 'Low' ? 'critical' : val === 'Medium' ? 'warning' : 'optimal';
+    if (type === 'moisture') return val < 65 || val > 85 ? 'critical' : val < 70 || val > 80 ? 'warning' : 'optimal';
+    if (type === 'temp') return val < 20 || val > 30 ? 'critical' : val < 22 || val > 26 ? 'warning' : 'optimal';
+    if (type === 'ph') return val < 5.5 || val > 7.5 ? 'critical' : val < 6.0 || val > 7.0 ? 'warning' : 'optimal';
+    return 'optimal';
+  };
 
   if (!mounted) return null;
 
+  const sensorData = [
+    { label: t('dashboard_moisture'), value: sensors.soilMoisture.toFixed(1), unit: '%', icon: Droplets, accent: 'stat-green', status: getSensorStatus(sensors.soilMoisture, 'moisture'), range: '70–80%' },
+    { label: t('dashboard_temp'), value: sensors.soilTemperature.toFixed(1), unit: '°C', icon: Thermometer, accent: 'stat-amber', status: getSensorStatus(sensors.soilTemperature, 'temp'), range: '22–26°C' },
+    { label: t('dashboard_ph'), value: sensors.soilPh.toFixed(1), unit: 'pH', icon: Beaker, accent: 'stat-blue', status: getSensorStatus(sensors.soilPh, 'ph'), range: '6.0–7.0' },
+    { label: t('dashboard_nutrients'), value: sensors.nutrientLevel, unit: '', icon: Leaf, accent: 'stat-green', status: getSensorStatus(sensors.nutrientLevel, 'nutrients'), range: 'High' },
+  ];
+
   return (
-    <div 
-      className="relative min-h-screen font-body text-bone selection:bg-bio selection:text-abyss overflow-hidden" 
-      ref={containerRef}
-      onMouseMove={handleMouseMove}
-    >
-      {/* ═══ Atmosphere ═══ */}
-      <div className="atmosphere-noise" />
-      <div className="atmosphere-mesh pointer-events-none" />
-
-      {/* ═══ The Sentient Number ═══ */}
-      <motion.div 
-         className="sentient-number left-[5%] top-[10%] opacity-20"
-         style={{
-            x: useTransform(smoothX, [-1000, 1000], [-50, 50]),
-            y: useTransform(smoothY, [-1000, 1000], [-50, 50]),
-            skewX: useTransform(smoothX, [-1000, 1000], [-10, 10]),
-            color: isHealthy ? 'rgba(57, 255, 20, 0.15)' : 'rgba(255, 51, 0, 0.15)'
-         }}
+    <div className="space-y-8">
+      {/* ═══ Hero Section ═══ */}
+      <motion.section 
+        className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary/10 via-card to-card border border-border p-6 md:p-8"
+        custom={0} variants={fadeUp} initial="hidden" animate="visible"
       >
-         {healthScore}
-      </motion.div>
+        {/* Background decoration */}
+        <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-48 h-48 bg-accent/5 rounded-full blur-3xl translate-y-1/2 -translate-x-1/4 pointer-events-none" />
+        
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+          <div className="space-y-3">
+            <div className="flex items-center gap-2">
+              <div className={cn("status-dot", getStatusDot(healthScore))} />
+              <span className="font-mono text-xs text-muted-foreground uppercase tracking-wider">{getStatusLabel(healthScore)}</span>
+            </div>
+            <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground leading-tight">
+              Good {new Date().getHours() < 12 ? 'Morning' : new Date().getHours() < 18 ? 'Afternoon' : 'Evening'} 👋
+            </h2>
+            <p className="text-sm text-muted-foreground max-w-md leading-relaxed">
+              {healthScore >= 85 
+                ? `Your ${settings.cropType || 'crop'} field is thriving. All sensors are within optimal ranges and the ecosystem is stable.`
+                : `Some readings need attention in your ${settings.cropType || 'crop'} field. Review the sensor data below for details.`}
+            </p>
+          </div>
 
-      {/* ═══ Main Architecture ═══ */}
-      <motion.div
-        className="relative z-10 w-full min-h-screen p-6 md:p-12 lg:p-20 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 pt-24"
-        variants={systemBootStagger}
-        initial="hidden"
-        animate="visible"
-      >
-
-        {/* ─── Left Asymmetric Column ─── */}
-        <motion.header className="lg:col-span-5 flex flex-col justify-between items-start" variants={cyberPanelReveal}>
-           
-           <div>
-             <div className="flex items-center gap-3 mb-4">
-                <SpinnerIcon className="w-6 h-6 text-bio animate-[spin_4s_linear_infinite]" />
-                <span className="font-mono-data text-xs text-bio/70 uppercase tracking-widest border border-bio/30 px-2 py-0.5">NET.LINK ESTABLISHED // {format(lastUpdated, 'HH:mm:ss')}</span>
-             </div>
-             
-             <h1 className="font-display text-5xl md:text-7xl lg:text-8xl font-bold leading-[0.8] mb-6 drop-shadow-[0_0_15px_rgba(57,255,20,0.3)]">
-               AGRI<br/>SENSE
-               <span className="text-bio block mt-2 text-3xl md:text-5xl font-organic italic">OS / Biosphere</span>
-             </h1>
-
-             <p className="font-mono-data text-sm md:text-base text-bone/60 max-w-sm leading-relaxed mb-12 border-l-2 border-bio/50 pl-4">
-               {isHealthy ? 
-               "Biological telemetry reporting nominal ranges. Mycelial network stable. Hydration nodes maintaining optimal saturation." : 
-               "CRITICAL VARIANCE DETECTED. Ecosystem equilibrium disrupted. Manual intervention required to stabilize biological matrix."}
-             </p>
-           </div>
-
-           {/* Vertical Status Array */}
-           <div className="flex gap-4 w-full">
-              <div className={cn("flex-1 p-4 border flex flex-col items-start cyber-panel", isHealthy ? "border-bio" : "border-solar")}>
-                 <span className="font-mono-data text-[10px] text-bone/50 uppercase tracking-widest">ECO.INTEGRITY</span>
-                 <span className={cn("font-display text-4xl font-bold leading-none mt-2", isHealthy ? "text-bio" : "text-solar")}>{healthScore}%</span>
+          {/* Health Score Circle */}
+          <div className="flex items-center gap-6">
+            <div className="relative w-28 h-28 shrink-0">
+              <svg viewBox="0 0 120 120" className="w-full h-full -rotate-90">
+                <circle cx="60" cy="60" r="52" fill="none" stroke="hsl(var(--border))" strokeWidth="6" />
+                <motion.circle 
+                  cx="60" cy="60" r="52" fill="none" 
+                  stroke={healthScore >= 85 ? '#6EE7A8' : healthScore >= 60 ? '#D4A854' : '#EF6461'}
+                  strokeWidth="6" strokeLinecap="round"
+                  initial={{ strokeDashoffset: 327 }}
+                  animate={{ strokeDashoffset: 327 - (327 * healthScore / 100) }}
+                  strokeDasharray="327"
+                  transition={{ duration: 1.2, ease: "easeOut", delay: 0.3 }}
+                />
+              </svg>
+              <div className="absolute inset-0 flex flex-col items-center justify-center">
+                <span className="font-display text-3xl font-bold text-foreground">{healthScore}</span>
+                <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">Score</span>
               </div>
-              <div className="flex-[0.5] p-4 cyber-panel border border-muted flex flex-col justify-end items-end">
-                 <span className="font-mono-data text-[10px] text-bone/50 uppercase">SECTOR</span>
-                 <span className="font-display text-xl font-bold text-bone">0xA1</span>
+            </div>
+            <div className="hidden md:flex flex-col gap-1.5 text-xs text-muted-foreground">
+              <div className="flex items-center gap-1.5"><Sun className="w-3.5 h-3.5 text-accent" /> Day 42 of cycle</div>
+              <div className="flex items-center gap-1.5"><Wind className="w-3.5 h-3.5" /> Updated {format(lastUpdated, 'h:mm a')}</div>
+              <div className="flex items-center gap-1.5"><Sprout className="w-3.5 h-3.5 text-primary" /> {settings.cropType}</div>
+            </div>
+          </div>
+        </div>
+      </motion.section>
+
+      {/* ═══ Sensor Grid ═══ */}
+      <section>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-display text-lg font-semibold text-foreground">Sensor Telemetry</h3>
+          <Link href="/sensors" className="flex items-center gap-1 text-xs text-primary hover:text-primary/80 font-medium transition-colors">
+            View All <ArrowUpRight className="w-3.5 h-3.5" />
+          </Link>
+        </div>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 stagger-children">
+          {sensorData.map((sensor, i) => (
+            <motion.div
+              key={i}
+              className={cn("stat-card", sensor.accent)}
+              custom={i + 1} variants={fadeUp} initial="hidden" animate="visible"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <div className="w-9 h-9 rounded-lg bg-secondary flex items-center justify-center">
+                  <sensor.icon className="w-4 h-4 text-muted-foreground" strokeWidth={1.8} />
+                </div>
+                <div className={cn("status-dot", sensor.status)} />
               </div>
-           </div>
-        </motion.header>
+              <div className="flex items-baseline gap-1">
+                <span className="font-display text-2xl md:text-3xl font-bold text-foreground">{sensor.value}</span>
+                <span className="text-sm text-muted-foreground font-medium">{sensor.unit}</span>
+              </div>
+              <div className="flex items-center justify-between mt-2">
+                <span className="text-[11px] text-muted-foreground font-medium truncate">{sensor.label}</span>
+                <span className="font-mono text-[9px] text-muted-foreground/60">{sensor.range}</span>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </section>
 
-        {/* ─── Right Cascading Grid ─── */}
-        <motion.main 
-           className="lg:col-span-7 flex flex-col gap-6 w-full relative z-20"
-           style={{ y: yDrift, rotateX: rotateDrift }}
-        >
-            
-           {/* Telemetry Sensor Array (Overlapping / Broken Grid) */}
-           <div className="grid grid-cols-2 gap-4 auto-rows-min mt-10 lg:mt-0 relative">
-              <div className="absolute -left-6 top-1/2 w-0.5 h-3/4 bg-bio/20 hidden lg:block" />
-              <div className="absolute -left-12 top-10 w-4 h-0.5 bg-bio/20 hidden lg:block" />
-              <div className="absolute -left-12 bottom-10 w-4 h-0.5 bg-bio/20 hidden lg:block" />
+      {/* ═══ Quick Actions + Task Feed ═══ */}
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+        {/* Left: Actions */}
+        <motion.div className="lg:col-span-2 space-y-4" custom={5} variants={fadeUp} initial="hidden" animate="visible">
+          <h3 className="font-display text-lg font-semibold text-foreground">Quick Actions</h3>
+          
+          {/* Irrigation Toggle */}
+          <button 
+            onClick={toggleValve} 
+            className={cn(
+              "w-full text-left rounded-xl p-5 border transition-all duration-300 group",
+              irrigationOn 
+                ? "bg-primary/10 border-primary/30 shadow-glow" 
+                : "bg-card border-border hover:border-primary/20 hover:shadow-card-hover"
+            )}
+          >
+            <div className="flex items-center gap-4">
+              <div className={cn(
+                "w-12 h-12 rounded-xl flex items-center justify-center transition-colors",
+                irrigationOn ? "bg-primary/20" : "bg-secondary"
+              )}>
+                <Zap className={cn("w-5 h-5", irrigationOn ? "text-primary" : "text-muted-foreground")} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-display text-sm font-semibold text-foreground">{t('dashboard_smart_valve')}</p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {irrigationOn ? 'System active · Dispensing water' : 'Tap to activate irrigation'}
+                </p>
+              </div>
+              <div className={cn(
+                "w-10 h-6 rounded-full p-0.5 transition-colors",
+                irrigationOn ? "bg-primary" : "bg-border"
+              )}>
+                <motion.div 
+                  className="w-5 h-5 rounded-full bg-foreground shadow-sm"
+                  animate={{ x: irrigationOn ? 16 : 0 }}
+                  transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                />
+              </div>
+            </div>
+          </button>
 
-              {/* Moisture */}
-              <HoverRefCard>
-                 <div className="flex justify-between items-start mb-6">
-                    <Droplets className="w-5 h-5 text-bio drop-shadow-[0_0_8px_#39ff14]" />
-                    <span className="font-mono-data text-[9px] text-bone/40 border border-muted px-1">T.MSTR</span>
-                 </div>
-                 <div className="flex items-baseline gap-1">
-                    <span className="font-display text-4xl md:text-5xl font-bold">{sensors.soilMoisture.toFixed(1)}</span>
-                    <span className="font-mono-data text-xs text-bio">%</span>
-                 </div>
-              </HoverRefCard>
+          {/* Disease Scanner */}
+          <Link 
+            href="/diagnosis" 
+            className="block rounded-xl p-5 border border-border bg-card hover:border-primary/20 hover:shadow-card-hover transition-all duration-300 group"
+          >
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-xl bg-destructive/10 flex items-center justify-center">
+                <Target className="w-5 h-5 text-destructive group-hover:rotate-12 transition-transform" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-display text-sm font-semibold text-foreground">{t('dashboard_disease_scan')}</p>
+                <p className="text-xs text-muted-foreground mt-0.5">Upload photo for AI analysis</p>
+              </div>
+              <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:translate-x-1 transition-transform" />
+            </div>
+          </Link>
 
-              {/* Temperature */}
-              <HoverRefCard>
-                 <div className="flex justify-between items-start mb-6">
-                    <Thermometer className="w-5 h-5 text-solar drop-shadow-[0_0_8px_#ff3300]" />
-                    <span className="font-mono-data text-[9px] text-bone/40 border border-muted px-1">T.TEMP</span>
-                 </div>
-                 <div className="flex items-baseline gap-1">
-                    <span className="font-display text-4xl md:text-5xl font-bold">{sensors.soilTemperature.toFixed(1)}</span>
-                    <span className="font-mono-data text-xs text-solar">°C</span>
-                 </div>
-              </HoverRefCard>
+          {/* Weather Quick Card */}
+          <Link 
+            href="/weather" 
+            className="block rounded-xl p-5 border border-border bg-card hover:border-accent/20 hover:shadow-glow-amber transition-all duration-300 group"
+          >
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center">
+                <Cloud className="w-5 h-5 text-accent" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-display text-sm font-semibold text-foreground">Weather Forecast</p>
+                <p className="text-xs text-muted-foreground mt-0.5">Partly cloudy · 28°C expected</p>
+              </div>
+              <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:translate-x-1 transition-transform" />
+            </div>
+          </Link>
 
-              {/* pH Level */}
-              <HoverRefCard>
-                 <div className="flex justify-between items-start mb-6">
-                    <Beaker className="w-5 h-5 text-bone/80" />
-                    <span className="font-mono-data text-[9px] text-bone/40 border border-muted px-1">T.ACID</span>
-                 </div>
-                 <div className="flex items-baseline gap-1">
-                    <span className="font-display text-4xl md:text-5xl font-bold">{sensors.soilPh.toFixed(1)}</span>
-                    <span className="font-organic text-lg text-bone/60 ml-1">pH</span>
-                 </div>
-              </HoverRefCard>
+          {/* Market Quick Card */}
+          <Link 
+            href="/prices" 
+            className="block rounded-xl p-5 border border-border bg-card hover:border-primary/20 hover:shadow-card-hover transition-all duration-300 group"
+          >
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+                <TrendingUp className="w-5 h-5 text-primary" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-display text-sm font-semibold text-foreground">Market Prices</p>
+                <p className="text-xs text-muted-foreground mt-0.5">{settings.cropType} trending up ↗</p>
+              </div>
+              <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:translate-x-1 transition-transform" />
+            </div>
+          </Link>
+        </motion.div>
 
-              {/* Nutrients - Full Width */}
-              <HoverRefCard className="col-span-2 mt-4 ml-0 md:ml-12 border-bio/50 bg-bio/5">
-                 <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-full border border-bio flex items-center justify-center shrink-0">
-                       <Leaf className="w-5 h-5 text-bio drop-shadow-[0_0_5px_#39ff14]" />
-                    </div>
-                    <div>
-                       <span className="font-mono-data text-[10px] text-bio/70 mb-1 block">BIOLOGICAL_RESERVE</span>
-                       <span className="font-display text-2xl md:text-3xl font-bold text-bio">{'<<'} {sensors.nutrientLevel} {'>>'}</span>
-                    </div>
-                 </div>
-              </HoverRefCard>
-           </div>
-
-           {/* Hardware Overrides */}
-           <motion.div variants={cyberPanelReveal} className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8 pt-8 border-t border-muted/50 relative">
-              <div className="absolute -top-1 right-0 w-24 h-[1px] bg-bio/50 blur-[2px]" />
-              
-              <button 
-                onClick={() => setIrrigationOn(!irrigationOn)}
-                className={cn(
-                  "cyber-panel p-6 text-left group",
-                  irrigationOn ? "bg-bio/20 border-bio ring-[0.5px] ring-bio shadow-neon inset-glow" : ""
-                )}
+        {/* Right: Task Feed */}
+        <motion.div className="lg:col-span-3" custom={6} variants={fadeUp} initial="hidden" animate="visible">
+          <div className="rounded-xl border border-border bg-card overflow-hidden h-full flex flex-col">
+            {/* Task Header */}
+            <div className="px-5 py-4 border-b border-border flex items-center justify-between bg-secondary/50">
+              <div>
+                <h3 className="font-display text-lg font-semibold text-foreground">Today's Tasks</h3>
+                <p className="text-xs text-muted-foreground mt-0.5">{completedCount} of {tasks.length} completed</p>
+              </div>
+              <button
+                onClick={() => setShowInput(!showInput)}
+                className="w-8 h-8 rounded-lg bg-primary/10 hover:bg-primary/20 flex items-center justify-center text-primary transition-colors"
               >
-                 <Zap className={cn("w-6 h-6 mb-4", irrigationOn ? "animate-pulse text-bone" : "text-bio/50")} />
-                 <h3 className="font-display text-lg mb-2 text-bone">{t('dashboard_smart_valve')}</h3>
-                 <span className="font-mono-data text-[10px] py-1 px-2 border border-current">
-                   {irrigationOn ? "[ ACTIVE. DISCHARGE ]" : "[ STANDBY. DRY ]"}
-                 </span>
+                <Plus className="w-4 h-4" />
               </button>
+            </div>
 
-              <Link href="/diagnosis" className="cyber-panel p-6 group flex flex-col justify-between hover:bg-solar/10 hover:border-solar hover:shadow-flare">
-                 <div className="flex justify-between w-full">
-                    <Target className="w-6 h-6 text-solar group-hover:rotate-90 transition-transform duration-500" />
-                    <Orbit className="w-4 h-4 text-bone/30 group-hover:animate-spin" />
-                 </div>
-                 <div className="mt-8">
-                    <h3 className="font-display text-lg text-bone drop-shadow-md mb-2">{t('dashboard_disease_scan')}</h3>
-                    <div className="w-full h-auto text-[10px] border-b border-solar/30 pb-1">
-                      <ScrambleText text="> INITIATE_SPECTRAL_ANALYSIS" active={false} />
-                    </div>
-                 </div>
-              </Link>
-           </motion.div>
+            {/* Progress bar */}
+            <div className="h-1 bg-border">
+              <motion.div
+                className="h-full bg-primary"
+                initial={{ width: 0 }}
+                animate={{ width: tasks.length > 0 ? `${(completedCount / tasks.length) * 100}%` : '0%' }}
+                transition={{ duration: 0.6, ease: "easeOut" }}
+              />
+            </div>
 
-        </motion.main>
-      </motion.div>
+            {/* Add task input */}
+            <AnimatePresence>
+              {showInput && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  className="border-b border-border overflow-hidden"
+                >
+                  <div className="flex gap-2 p-3">
+                    <input
+                      autoFocus
+                      type="text"
+                      value={newTaskTitle}
+                      onChange={e => setNewTaskTitle(e.target.value)}
+                      onKeyDown={e => { if (e.key === 'Enter') addTask(); if (e.key === 'Escape') setShowInput(false); }}
+                      placeholder="Add a new task..."
+                      className="flex-1 bg-secondary rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary/50"
+                    />
+                    <button onClick={addTask} className="px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-semibold hover:bg-primary/90 transition-colors">
+                      Add
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Task List */}
+            <div className="flex-1 divide-y divide-border overflow-y-auto max-h-[400px]">
+              {tasks.map((task) => (
+                <div
+                  key={task.id}
+                  className="flex items-center gap-3 px-5 py-3.5 hover:bg-secondary/30 transition-colors group cursor-pointer"
+                  onClick={() => toggleTask(task.id)}
+                >
+                  <button className={cn(
+                    "w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-all",
+                    task.completed 
+                      ? "bg-primary border-primary" 
+                      : "border-border group-hover:border-primary/50"
+                  )}>
+                    {task.completed && <Check className="w-3 h-3 text-primary-foreground" strokeWidth={3} />}
+                  </button>
+                  <span className={cn(
+                    "flex-1 text-sm font-medium transition-colors",
+                    task.completed ? "text-muted-foreground line-through" : "text-foreground"
+                  )}>
+                    {task.title}
+                  </span>
+                  <button
+                    onClick={e => { e.stopPropagation(); deleteTask(task.id); }}
+                    className="opacity-0 group-hover:opacity-100 p-1 text-muted-foreground hover:text-destructive transition-all"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              ))}
+              {tasks.length === 0 && (
+                <div className="py-12 text-center">
+                  <Sprout className="w-8 h-8 text-muted-foreground/30 mx-auto mb-2" />
+                  <p className="text-sm text-muted-foreground">No tasks yet. Add one above!</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </motion.div>
+      </div>
     </div>
-  );
-}
-
-// A helper wrapper card for the cypher hover effect
-function HoverRefCard({ children, className }: { children: React.ReactNode, className?: string }) {
-  const [isHovered, setIsHovered] = useState(false);
-  return (
-    <motion.div 
-      variants={cyberPanelReveal}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      className={cn("cyber-panel p-5 relative overflow-hidden group", className)}
-    >
-      <div className={cn("transition-opacity duration-300 relative z-10", isHovered ? "opacity-10" : "opacity-100")}>
-        {children}
-      </div>
-
-      {/* Scrambled cypher overlay that fades IN on hover */}
-      <div className={cn("absolute inset-0 p-5 flex flex-col justify-center pointer-events-none transition-all duration-300 z-20", isHovered ? "opacity-100" : "opacity-0 scale-95")}>
-         <div className="text-bio">
-            <ScrambleText text="> DECRYPTING_NODE." active={isHovered} />
-            <ScrambleText text="  VAL: [PROTECTED]" active={isHovered} />
-            <ScrambleText text="  SYS: OK_" active={isHovered} />
-         </div>
-      </div>
-    </motion.div>
-  );
-}
-
-function SpinnerIcon(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="square" strokeLinejoin="miter" {...props}>
-      <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
-    </svg>
   );
 }

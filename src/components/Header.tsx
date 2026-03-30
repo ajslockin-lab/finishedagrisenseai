@@ -26,7 +26,7 @@ export function Header() {
               {t('header_title')}
             </h1>
             <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground font-medium">
-              <MapPin className="w-3 h-3 text-primary" />
+              <MapPin className="w-3 h-3 text-accent" />
               <span className="font-mono text-[10px]">{settings.cropType} · {settings.location.split(',')[0]}</span>
             </div>
           </div>
@@ -35,7 +35,7 @@ export function Header() {
         {/* Right: notification + avatar */}
         <div className="flex items-center gap-2">
           {/* Notification bell */}
-          <button className="relative p-2.5 text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-xl transition-colors">
+          <button className="relative p-2.5 text-muted-foreground hover:text-foreground hover:bg-secondary rounded-xl transition-colors">
             <Bell className="w-5 h-5" strokeWidth={1.8} />
             {/* Badge */}
             <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-destructive rounded-full animate-live-dot" />
@@ -44,7 +44,7 @@ export function Header() {
           {/* User avatar */}
           <Link
             href="/settings"
-            className="w-9 h-9 rounded-xl bg-muted/60 border border-border hover:border-primary/30 flex items-center justify-center transition-colors"
+            className="w-9 h-9 rounded-xl bg-secondary border border-border hover:border-primary/30 flex items-center justify-center transition-colors"
           >
             <User className="w-4 h-4 text-muted-foreground" strokeWidth={1.8} />
           </Link>

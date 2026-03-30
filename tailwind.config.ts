@@ -10,103 +10,87 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        // The aggressive, ultra-extended grotesque display
-        display: ['"Syncopate"', '"Arial Black"', 'Impact', 'sans-serif'],
-        // The dense, mechanical data font
-        mono: ['"Space Mono"', 'Consolas', 'monospace'],
-        // The organic, biological serif
-        serif: ['"Cormorant Garamond"', 'Georgia', 'serif'],
-        // Standard body parsing
-        body: ['"Syncopate"', 'sans-serif'], 
+        display: ['"Outfit"', 'system-ui', 'sans-serif'],
+        body: ['"Outfit"', 'system-ui', 'sans-serif'],
+        mono: ['"JetBrains Mono"', 'monospace'],
       },
       colors: {
-        // Cyber-Botany Palette
-        abyss: '#030D06',       // Deepest background
-        mycelium: '#0A170C',    // Elevated card backgrounds
-        bio: {
-          DEFAULT: '#39FF14',   // Shock neon green (Status OK/Accent)
-          dim: '#165709',       // Deep glow
-        },
-        solar: {
-          DEFAULT: '#FF3300',   // Visceral Warning Red
-          dim: '#661400',
-        },
-        bone: '#F6F4EB',        // Main textual output
-        
-        // Root overrides so UI components don't break
-        background: '#030D06',
-        foreground: '#F6F4EB',
+        // Lush dark palette — deep forest meets warm earth
+        background: '#0C0F0A',
+        foreground: '#E8E6E1',
         card: {
-          DEFAULT: '#0A170C',
-          foreground: '#F6F4EB',
+          DEFAULT: '#141812',
+          foreground: '#E8E6E1',
         },
         popover: {
-          DEFAULT: '#0A170C',
-          foreground: '#F6F4EB',
+          DEFAULT: '#141812',
+          foreground: '#E8E6E1',
         },
         primary: {
-          DEFAULT: '#39FF14',
-          foreground: '#030D06',
+          DEFAULT: '#6EE7A8',   // Warm mint
+          foreground: '#0C0F0A',
         },
         secondary: {
-          DEFAULT: '#0A170C',
-          foreground: '#39FF14',
+          DEFAULT: '#1E241A',
+          foreground: '#E8E6E1',
         },
         muted: {
-          DEFAULT: '#165709',
-          foreground: '#A3BFA0',
+          DEFAULT: '#1A1F16',
+          foreground: '#7C8A72',
         },
         accent: {
-          DEFAULT: '#39FF14',
-          foreground: '#030D06',
+          DEFAULT: '#D4A854',   // Warm gold/amber
+          foreground: '#0C0F0A',
         },
         destructive: {
-          DEFAULT: '#FF3300',
-          foreground: '#030D06',
+          DEFAULT: '#EF6461',
+          foreground: '#0C0F0A',
         },
-        border: '#165709',     // Thin bio-green borders everywhere
-        input: '#0A170C',
-        ring: '#39FF14',
+        sage: '#8BAA7A',
+        amber: '#D4A854',
+        border: '#232A1E',
+        input: '#1A1F16',
+        ring: '#6EE7A8',
+        sidebar: {
+          DEFAULT: '#0E120B',
+          foreground: '#E8E6E1',
+          border: '#1E241A',
+        },
       },
       boxShadow: {
-        'neon': '10px 10px 0px 0px rgba(57, 255, 20, 0.1)',
-        'neon-hover': '20px 20px 0px 0px rgba(57, 255, 20, 0.2)',
-        'flare': '10px 10px 0px 0px rgba(255, 51, 0, 0.1)',
-      },
-      backgroundImage: {
-         'mesh-glow': 'radial-gradient(circle at 50% 50%, rgba(57, 255, 20, 0.1), transparent 60%)',
+        'premium': '0 1px 2px rgba(0,0,0,0.3), 0 4px 16px rgba(0,0,0,0.2)',
+        'glow': '0 0 20px rgba(110, 231, 168, 0.15)',
+        'glow-amber': '0 0 20px rgba(212, 168, 84, 0.15)',
+        'card-hover': '0 8px 32px rgba(0,0,0,0.4), 0 0 0 1px rgba(110,231,168,0.1)',
       },
       borderRadius: {
-        lg: '0px', // Complete sharp corners
-        md: '0px',
-        sm: '0px',
-      },
-      borderWidth: {
-         '0.5': '0.5px', // Hairline precise UI
+        lg: '0.75rem',
+        md: '0.5rem',
+        sm: '0.375rem',
       },
       keyframes: {
-        'mesh-drift': {
-          '0%': { transform: 'translate(0%, 0%) scale(1)' },
-          '33%': { transform: 'translate(5%, -5%) scale(1.1)' },
-          '66%': { transform: 'translate(-5%, 2%) scale(0.95)' },
-          '100%': { transform: 'translate(0%, 0%) scale(1)' },
+        'fade-up': {
+          '0%': { opacity: '0', transform: 'translateY(16px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
         },
-        'scanline': {
-          '0%': { transform: 'translateY(-100%)' },
-          '100%': { transform: 'translateY(100%)' },
+        'shimmer': {
+          '0%': { backgroundPosition: '-200% 0' },
+          '100%': { backgroundPosition: '200% 0' },
         },
-        'glitch': {
-          '0%, 100%': { opacity: '1', transform: 'translate(0)' },
-          '10%': { opacity: '0.8', transform: 'translate(-2px, 1px)' },
-          '20%': { opacity: '1', transform: 'translate(2px, -1px)' },
-          '30%': { opacity: '0', transform: 'translate(0)' },
-          '40%': { opacity: '1', transform: 'translate(-1px, 2px)' },
-        }
+        'pulse-soft': {
+          '0%, 100%': { opacity: '1' },
+          '50%': { opacity: '0.6' },
+        },
+        'live-dot': {
+          '0%, 100%': { transform: 'scale(1)', opacity: '1' },
+          '50%': { transform: 'scale(1.4)', opacity: '0.7' },
+        },
       },
       animation: {
-        'mesh-drift': 'mesh-drift 20s ease-in-out infinite alternate',
-        'scanline': 'scanline 4s linear infinite',
-        'glitch': 'glitch 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) both',
+        'fade-up': 'fade-up 0.5s ease-out both',
+        'shimmer': 'shimmer 2s linear infinite',
+        'pulse-soft': 'pulse-soft 3s ease-in-out infinite',
+        'live-dot': 'live-dot 2s ease-in-out infinite',
       },
     },
   },

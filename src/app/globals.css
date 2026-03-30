@@ -1,46 +1,39 @@
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,600;1,700&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syncopate:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 /* ═══════════════════════════════════════════
-   AgriSenseAI — Cyber-Botany Architecture
-   Maximalist Neon Data Art & Organic Serifs
+   AgriSenseAI — Lush Dark Design System
+   Warm, Premium, Agricultural Intelligence
    ═══════════════════════════════════════════ */
 
 @layer base {
   :root {
-    --background: 144 62% 3%;        /* #030D06 Abyssal green background */
-    --foreground: 51 32% 94%;        /* #F6F4EB Bone ash text */
-
-    --card: 135 43% 7%;              /* #0A170C Elevated panels */
-    --card-foreground: 51 32% 94%;
-
-    --popover: 135 43% 7%;
-    --popover-foreground: 51 32% 94%;
-
-    --primary: 111 100% 54%;         /* #39FF14 Shockingly bright neon green */
-    --primary-foreground: 144 62% 3%;
-
-    --secondary: 135 43% 7%;
-    --secondary-foreground: 111 100% 54%;
-
-    --muted: 111 81% 19%;            /* #165709 Deep glow overlay */
-    --muted-foreground: 111 23% 69%; /* #A3BFA0 Muted neon */
-
-    --accent: 111 100% 54%;          
-    --accent-foreground: 144 62% 3%;
-
-    --destructive: 12 100% 50%;      /* #FF3300 Solar flare red */
-    --destructive-foreground: 144 62% 3%;
-
-    --border: 111 81% 19%;           /* Neon hairline borders */
-    --input: 135 43% 7%;
-    --ring: 111 100% 54%;
-
-    /* Utterly sharp UI mapping */
-    --radius: 0px; 
+    --background: 90 18% 4%;
+    --foreground: 40 10% 90%;
+    --card: 100 16% 8%;
+    --card-foreground: 40 10% 90%;
+    --popover: 100 16% 8%;
+    --popover-foreground: 40 10% 90%;
+    --primary: 155 72% 62%;
+    --primary-foreground: 90 18% 4%;
+    --secondary: 95 18% 12%;
+    --secondary-foreground: 40 10% 90%;
+    --muted: 95 18% 10%;
+    --muted-foreground: 95 14% 50%;
+    --accent: 40 62% 52%;
+    --accent-foreground: 90 18% 4%;
+    --destructive: 2 82% 66%;
+    --destructive-foreground: 90 18% 4%;
+    --border: 95 16% 13%;
+    --input: 95 18% 10%;
+    --ring: 155 72% 62%;
+    --radius: 0.75rem;
+    --sidebar: 95 18% 4%;
+    --sidebar-foreground: 40 10% 90%;
+    --sidebar-border: 95 18% 12%;
   }
 }
 
@@ -48,132 +41,149 @@
   * {
     @apply border-border;
   }
-
   body {
     @apply bg-background text-foreground;
-    font-feature-settings: "rlig" 1, "calt" 1;
     -webkit-font-smoothing: antialiased;
-    overflow-x: hidden; /* Important due to bleed typography */
+    -moz-osx-font-smoothing: grayscale;
   }
-
   html {
     color-scheme: dark;
+    scroll-behavior: smooth;
   }
 }
 
 /* ═══════════════════════════════════════════
-   Cyber-Botanical Typography
+   Typography System
    ═══════════════════════════════════════════ */
 .font-display {
-  font-family: 'Syncopate', sans-serif;
-  text-transform: uppercase;
-  letter-spacing: -0.05em; /* Extremely brutal spacing for huge display */
+  font-family: 'Outfit', system-ui, sans-serif;
+  letter-spacing: -0.025em;
 }
-
-.font-mono-data {
-  font-family: 'Space Mono', monospace;
-  text-transform: uppercase;
-  letter-spacing: -0.01em; 
+.font-body {
+  font-family: 'Outfit', system-ui, sans-serif;
 }
-
-.font-organic {
-  font-family: 'Cormorant Garamond', serif;
-  font-style: italic;
-  font-weight: 700;
-  letter-spacing: -0.01em;
-  @apply text-muted-foreground; /* Use as background/accent organic element */
+.font-mono {
+  font-family: 'JetBrains Mono', monospace;
+  font-variant-numeric: tabular-nums;
 }
 
 /* ═══════════════════════════════════════════
-   Atmospheric Mesh & Noise
+   Atmospheric Background
    ═══════════════════════════════════════════ */
-.atmosphere-mesh {
+.grain-overlay {
+  position: relative;
+}
+.grain-overlay::before {
+  content: '';
   position: fixed;
-  inset: -20vh -20vw;
-  width: 140vw;
-  height: 140vh;
-  z-index: -2;
-  background: 
-    radial-gradient(circle at 70% 20%, rgba(57, 255, 20, 0.08) 0%, transparent 40%),
-    radial-gradient(circle at 30% 80%, rgba(57, 255, 20, 0.05) 0%, transparent 50%),
-    radial-gradient(circle at 10% 40%, rgba(255, 51, 0, 0.03) 0%, transparent 40%);
-  @apply animate-mesh-drift mix-blend-screen;
+  inset: 0;
+  z-index: 0;
+  opacity: 0.03;
   pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
-.atmosphere-noise {
+/* Subtle page-level radial glow */
+.page-glow {
   position: fixed;
   inset: 0;
   z-index: -1;
-  opacity: 0.15;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
   pointer-events: none;
-  mix-blend-mode: overlay;
+  background:
+    radial-gradient(ellipse 60% 40% at 20% 10%, rgba(110, 231, 168, 0.04) 0%, transparent 70%),
+    radial-gradient(ellipse 50% 50% at 80% 90%, rgba(212, 168, 84, 0.03) 0%, transparent 70%);
 }
 
 /* ═══════════════════════════════════════════
-   Sentient Hover States (Cypher Reveal Effect)
+   Card Styles
    ═══════════════════════════════════════════ */
-/* A trick: use the pseudo-element to hold scrambled text and reveal true text on hover.
-   Implementing a clean data-mask via tailwind utility classes in React instead for ease,
-   but we'll keep the brutal neon focus state here. */
-
-.cyber-panel {
-  @apply bg-card/60 backdrop-blur-xl border border-muted shadow-neon text-bone relative overflow-hidden transition-all duration-300;
+.glass-card {
+  @apply bg-card border border-border rounded-xl shadow-premium;
+  backdrop-filter: blur(12px);
 }
-.cyber-panel:hover {
-  @apply bg-card/80 border-primary shadow-neon-hover -translate-y-[2px] -translate-x-[2px];
+.glass-card:hover {
+  @apply border-primary/20 shadow-card-hover;
 }
 
-/* CRT Scanline moving over panel */
-.cyber-panel::after {
+/* Stat cards with left accent */
+.stat-card {
+  @apply bg-card border border-border rounded-xl p-5 relative overflow-hidden transition-all duration-300;
+}
+.stat-card::before {
   content: '';
   position: absolute;
-  inset: 0;
-  background: linear-gradient(to bottom, transparent, rgba(57, 255, 20, 0.05) 50%, transparent);
-  height: 20%;
-  width: 100%;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.3s;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  border-radius: 0 4px 4px 0;
 }
-.cyber-panel:hover::after {
-  opacity: 1;
-  @apply animate-scanline;
+.stat-card.stat-green::before { background: #6EE7A8; }
+.stat-card.stat-amber::before { background: #D4A854; }
+.stat-card.stat-red::before   { background: #EF6461; }
+.stat-card.stat-blue::before  { background: #60A5FA; }
+
+.stat-card:hover {
+  @apply -translate-y-0.5 shadow-card-hover border-border/60;
 }
 
 /* ═══════════════════════════════════════════
-   Massive Unforgettable Text Overrides
+   Status Indicators (Solid Dots)
    ═══════════════════════════════════════════ */
-.sentient-number {
-  /* Bleeding huge absolute background number */
-  @apply fixed font-display font-bold mix-blend-overlay z-0 text-[35vw] md:text-[25vw] leading-[0.6] tracking-tighter;
-  color: rgba(57, 255, 20, 0.05); /* very faint neon green */
-  pointer-events: none;
-  user-select: none;
-  /* Hardware accelerated distortion handled via Framer Motion */
+.status-dot {
+  @apply w-2 h-2 rounded-full shrink-0;
+}
+.status-dot.optimal  { @apply bg-primary; box-shadow: 0 0 6px rgba(110, 231, 168, 0.5); }
+.status-dot.warning  { @apply bg-accent; box-shadow: 0 0 6px rgba(212, 168, 84, 0.5); }
+.status-dot.critical { @apply bg-destructive; box-shadow: 0 0 6px rgba(239, 100, 97, 0.5); }
+
+/* ═══════════════════════════════════════════
+   Gold accent line
+   ═══════════════════════════════════════════ */
+.gold-line {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(212, 168, 84, 0.3), transparent);
 }
 
 /* ═══════════════════════════════════════════
-   Scrollbar & Small Utilities
+   Animation Utilities
    ═══════════════════════════════════════════ */
-::-webkit-scrollbar {
-  width: 1px;
-}
-::-webkit-scrollbar-track {
-  background: var(--background);
-}
-::-webkit-scrollbar-thumb {
-  background: rgba(57, 255, 20, 0.7);
+.skeleton {
+  @apply rounded-lg;
+  background: linear-gradient(90deg, hsl(var(--muted)), hsl(var(--muted)/0.5), hsl(var(--muted)));
+  background-size: 200% 100%;
+  @apply animate-shimmer;
 }
 
+/* Staggered children entry */
+.stagger-children > * {
+  @apply animate-fade-up;
+}
+.stagger-children > *:nth-child(1) { animation-delay: 0ms; }
+.stagger-children > *:nth-child(2) { animation-delay: 60ms; }
+.stagger-children > *:nth-child(3) { animation-delay: 120ms; }
+.stagger-children > *:nth-child(4) { animation-delay: 180ms; }
+.stagger-children > *:nth-child(5) { animation-delay: 240ms; }
+.stagger-children > *:nth-child(6) { animation-delay: 300ms; }
+.stagger-children > *:nth-child(7) { animation-delay: 360ms; }
+.stagger-children > *:nth-child(8) { animation-delay: 420ms; }
+
+/* ═══════════════════════════════════════════
+   Scrollbar
+   ═══════════════════════════════════════════ */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: hsl(var(--border)); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: hsl(var(--muted-foreground)); }
+
+/* ═══════════════════════════════════════════
+   Recharts override
+   ═══════════════════════════════════════════ */
 .recharts-tooltip-wrapper .recharts-default-tooltip {
   background: hsl(var(--card)) !important;
-  color: var(--primary) !important;
-  border: 1px solid var(--primary) !important;
-  border-radius: 0 !important;
-  font-family: 'Space Mono', monospace !important;
-  text-transform: uppercase;
-  font-weight: 700;
-  box-shadow: 10px 10px 0px 0px rgba(57, 255, 20, 0.1) !important;
+  border: 1px solid hsl(var(--border)) !important;
+  border-radius: 0.5rem !important;
+  font-family: 'JetBrains Mono', monospace !important;
+  font-size: 0.75rem !important;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.3) !important;
 }

@@ -7,28 +7,6 @@ import { SensorProvider } from '@/context/SensorContext';
 import { ThemeProvider } from '@/context/ThemeContext';
 import { NotificationProvider } from '@/context/NotificationContext';
 import Script from 'next/script';
-import { Cormorant_Garamond, DM_Sans, IBM_Plex_Mono } from 'next/font/google';
-
-const cormorant = Cormorant_Garamond({
-  subsets: ['latin'],
-  weight: ['400', '500', '600', '700'],
-  variable: '--font-cormorant',
-  display: 'swap',
-});
-
-const dmSans = DM_Sans({
-  subsets: ['latin'],
-  weight: ['400', '500', '600', '700'],
-  variable: '--font-dm-sans',
-  display: 'swap',
-});
-
-const ibmPlexMono = IBM_Plex_Mono({
-  subsets: ['latin'],
-  weight: ['400', '500', '600', '700'],
-  variable: '--font-ibm-plex-mono',
-  display: 'swap',
-});
 
 export const metadata: Metadata = {
   title: 'AgriSense AI',
@@ -53,21 +31,22 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/icon-192.svg" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-        <meta name="theme-color" content="#1A2318" />
+        <meta name="theme-color" content="#0C0F0A" />
         <link
           rel="icon"
-          href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231A2318'/%3E%3Cpath d='M46 14C28 16 16 28 13 42c11-5 20-14 25-26-4 14-13 25-25 33' stroke='%23D4A843' stroke-width='4' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"
+          href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230C0F0A'/%3E%3Cpath d='M46 14C28 16 16 28 13 42c11-5 20-14 25-26-4 14-13 25-25 33' stroke='%236EE7A8' stroke-width='4' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"
         />
       </head>
       <body
-        className={`${cormorant.variable} ${dmSans.variable} ${ibmPlexMono.variable} font-body antialiased bg-background text-foreground`}
+        className="font-body antialiased bg-background text-foreground"
         suppressHydrationWarning
       >
         <ThemeProvider>
           <SensorProvider>
             <NotificationProvider>
-              {/* Grain texture overlay on the whole page */}
+              {/* Grain texture + ambient glow */}
               <div className="grain-overlay min-h-screen">
+                <div className="page-glow" />
                 {/* Desktop: sidebar + main content area */}
                 <div className="flex min-h-screen">
                   {/* Sidebar — hidden on mobile, visible on md+ */}
