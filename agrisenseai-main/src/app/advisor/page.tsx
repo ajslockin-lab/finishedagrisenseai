@@ -1,16 +1,11 @@
 "use client";
 
 import { useState, useRef, useEffect } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Send, RefreshCw, User, Bot, Sparkles } from 'lucide-react';
 import { useSensors } from '@/context/SensorContext';
 import { getPersonalizedRecommendations, askFarmingQuestion } from './actions';
 import type { GeneratePersonalizedRecommendationsOutput } from '@/ai/flows/generate-personalized-recommendations';
 import { cn } from '@/lib/utils';
+import { Send, RefreshCw, AlertTriangle, Lightbulb, MessageSquare } from 'lucide-react';
 
 const languageNames: Record<string, string> = {
   en: 'English',
@@ -25,28 +20,22 @@ const languageNames: Record<string, string> = {
 };
 
 export default function AIAdvisor() {
-  const { sensors, settings, t } = useSensors();
+  const { sensors, settings } = useSensors();
   const [recommendations, setRecommendations] = useState<GeneratePersonalizedRecommendationsOutput>([]);
   const [loadingRecs, setLoadingRecs] = useState(false);
   const [chatMessages, setChatMessages] = useState<{ role: 'user' | 'bot'; text: string }[]>([
-    { role: 'bot', text: 'Hello! I am your AgriSense advisor. How can I help you with your farm today?' }
+    { role: 'bot', text: 'How can I assist you with your farm today? Speak freely in your native language.' }
   ]);
   const [inputValue, setInputValue] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const [mounted, setMounted] = useState(false);
 
-  // AI can return arbitrary emoji strings; enforce a friendly, small allowlist so UI stays consistent.
-  const getSafeIcon = (icon: string) => {
-    const safeIcons = ['🌾', '🚜', '🌱', '💧', '☀️', '📈', '🛡️', '⚡', '🧪', '💡'];
-    const match = safeIcons.find(safe => icon?.trim().startsWith(safe));
-    return match ?? '💡';
-  };
-
   useEffect(() => {
     setMounted(true);
     handleRefreshRecs();
   }, []);
+
   const handleRefreshRecs = async () => {
     setLoadingRecs(true);
     try {
@@ -62,7 +51,7 @@ export default function AIAdvisor() {
       });
       setRecommendations(result);
     } catch (error) {
-      console.error('Error generating recommendations:', error);
+      console.error('Error:', error);
     } finally {
       setLoadingRecs(false);
     }
@@ -94,116 +83,132 @@ export default function AIAdvisor() {
 
   useEffect(() => {
     if (scrollRef.current) {
-      const scrollElement = scrollRef.current.querySelector('[data-radix-scroll-area-viewport]');
-      if (scrollElement) {
-        scrollElement.scrollTop = scrollElement.scrollHeight;
-      }
+        scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [chatMessages, isTyping]);
 
   if (!mounted) return null;
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-6 duration-700">
-      <section className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-2xl font-black text-primary flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-accent animate-pulse" />
-              {t('advisor_title')} ({languageNames[settings.language]})
-            </h2>
+    <div className="min-h-screen w-full flex flex-col pt-6 pb-[80px] bg-background">
+      <header className="px-6 flex justify-between items-end mb-6">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">
+            Advisor
+          </h1>
+          <div className="flex items-center gap-1.5 text-muted-foreground mt-1">
+            <MessageSquare className="w-3.5 h-3.5" />
+            <span className="text-xs font-semibold uppercase tracking-wider">AI Intelligence ({languageNames[settings.language]})</span>
           </div>
-          <Button onClick={handleRefreshRecs} variant="ghost" size="sm" className="h-9 gap-2 rounded-xl text-primary hover:bg-primary/10 transition-all active:scale-95" disabled={loadingRecs}>
-            <RefreshCw className={cn("w-3 h-3", loadingRecs && "animate-spin")} />
-            {t('common_refresh')}
-          </Button>
         </div>
+        <button 
+          onClick={handleRefreshRecs} 
+          disabled={loadingRecs}
+          className="w-8 h-8 rounded-full bg-surface border border-white/5 flex items-center justify-center text-muted-foreground hover:text-foreground active:scale-95 transition-all"
+        >
+          <RefreshCw className={cn("w-4 h-4", loadingRecs && "animate-spin text-accent")} />
+        </button>
+      </header>
 
-        <div className="grid gap-3">
-          {recommendations.length > 0 ? recommendations.map((rec, i) => (
-            <Card key={i} className="border-none shadow-sm bg-card/40 backdrop-blur-xl rounded-2xl group hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
-              <CardContent className="p-4 flex gap-4">
-                <div className="text-3xl flex-shrink-0 pt-1 group-hover:rotate-12 transition-transform">
-                  {getSafeIcon(rec.icon)}
-                </div>
-                <div className="space-y-1.5 flex-1">
-                  <div className="flex items-center justify-between">
-                    <h3 className="font-bold text-sm text-foreground">{rec.title}</h3>
-                    <Badge variant={rec.priority === 'High' ? 'destructive' : 'secondary'} className={cn(
-                      "text-[9px] font-black uppercase tracking-tight px-2 py-0.5 rounded-md"
-                    )}>
-                      {rec.priority}
-                    </Badge>
-                  </div>
-                  <p className="text-xs text-muted-foreground leading-relaxed font-medium">{rec.action}</p>
-                </div>
-              </CardContent>
-            </Card>
-          )) : (
-            <div className="text-center py-8 text-muted-foreground animate-pulse">
-              <Sparkles className="w-8 h-8 mx-auto mb-2 opacity-20" />
-              <p className="text-xs font-black uppercase tracking-widest">{t('common_loading')}</p>
+      {/* Structured Recommendations List */}
+      <section className="px-4 space-y-3 shrink-0">
+         {loadingRecs ? (
+            <div className="glass h-24 rounded-[1.5rem] flex items-center justify-center">
+              <RefreshCw className="w-5 h-5 text-muted-foreground animate-spin" />
+            </div>
+         ) : recommendations.length > 0 ? (
+           <div className="flex gap-3 overflow-x-auto pb-4 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none]">
+             {recommendations.map((rec, i) => (
+               <div 
+                 key={i} 
+                 className="min-w-[85%] sm:min-w-[280px] glass p-5 rounded-[1.5rem] flex flex-col gap-2 relative overflow-hidden shrink-0"
+               >
+                 <div className="flex items-center gap-2 mb-1">
+                   {rec.priority === 'High' ? (
+                     <AlertTriangle className="w-4 h-4 text-danger" />
+                   ) : (
+                     <Lightbulb className="w-4 h-4 text-accent" />
+                   )}
+                   <span className={cn(
+                     "text-[10px] font-bold uppercase tracking-wider",
+                     rec.priority === 'High' ? "text-danger" : "text-accent"
+                   )}>
+                     {rec.priority} Priority
+                   </span>
+                 </div>
+                 <p className="text-lg font-bold text-foreground leading-tight tracking-tight">
+                   {rec.title}
+                 </p>
+                 <p className="text-sm font-medium text-foreground/80 leading-relaxed">
+                   {rec.action}
+                 </p>
+               </div>
+             ))}
+           </div>
+         ) : null}
+      </section>
+
+      {/* Chat Interface */}
+      <section className="flex-1 flex flex-col mt-2 px-4 relative overflow-hidden">
+        
+        <div 
+          ref={scrollRef}
+          className="flex-1 overflow-y-auto space-y-6 pb-24 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] pt-4 px-2"
+        >
+          {chatMessages.map((msg, i) => (
+            <div key={i} className={cn(
+              "flex flex-col max-w-[85%]", 
+              msg.role === 'user' ? "ml-auto items-end" : "mr-auto items-start"
+            )}>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/50 mb-1.5 px-2">
+                {msg.role === 'user' ? "You" : "AgriSense AI"}
+              </span>
+              <div className={cn(
+                "px-5 py-3.5 text-[15px] font-medium leading-relaxed rounded-2xl relative",
+                msg.role === 'user'
+                  ? "bg-accent text-background rounded-tr-sm"
+                  : "bg-surface border border-white/5 text-foreground/90 rounded-tl-sm glass"
+              )}>
+                {msg.text}
+              </div>
+            </div>
+          ))}
+          {isTyping && (
+            <div className="flex flex-col max-w-[85%] mr-auto items-start">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/50 mb-1.5 px-2">
+                AgriSense AI
+              </span>
+              <div className="px-5 py-4 bg-surface border border-white/5 rounded-2xl rounded-tl-sm glass flex gap-1.5 items-center justify-center">
+                 <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground animate-bounce" style={{ animationDelay: '0ms' }} />
+                 <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground animate-bounce" style={{ animationDelay: '150ms' }} />
+                 <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground animate-bounce" style={{ animationDelay: '300ms' }} />
+              </div>
             </div>
           )}
         </div>
-      </section>
 
-      <section className="space-y-4">
-        <div>
-          <h2 className="text-2xl font-black text-primary">{t('advisor_chat_title')}</h2>
-          <p className="text-[10px] text-muted-foreground font-black uppercase tracking-[0.2em]">Speak in {languageNames[settings.language]}</p>
-        </div>
-
-        <Card className="border-none shadow-2xl bg-card/60 backdrop-blur-xl overflow-hidden flex flex-col h-[480px] rounded-[2.5rem] border border-white/20">
-          <ScrollArea className="flex-1 p-6" ref={scrollRef}>
-            <div className="space-y-6">
-              {chatMessages.map((msg, i) => (
-                <div key={i} className={cn("flex gap-3", msg.role === 'user' ? "flex-row-reverse" : "")}>
-                  <div className={cn(
-                    "w-9 h-9 rounded-2xl flex items-center justify-center shrink-0 shadow-lg",
-                    msg.role === 'user' ? "bg-primary text-white" : "bg-secondary text-primary"
-                  )}>
-                    {msg.role === 'user' ? <User className="w-4.5 h-4.5" /> : <Bot className="w-4.5 h-4.5" />}
-                  </div>
-                  <div className={cn(
-                    "p-4 rounded-[1.5rem] text-sm max-w-[85%] leading-relaxed shadow-sm font-medium",
-                    msg.role === 'user'
-                      ? "bg-primary text-white rounded-tr-none"
-                      : "bg-secondary/50 text-foreground rounded-tl-none border border-white/10"
-                  )}>
-                    {msg.text}
-                  </div>
-                </div>
-              ))}
-              {isTyping && (
-                <div className="flex gap-3 animate-in fade-in duration-300">
-                  <div className="w-9 h-9 rounded-2xl bg-secondary flex items-center justify-center shrink-0">
-                    <Bot className="w-4.5 h-4.5 text-primary" />
-                  </div>
-                  <div className="bg-secondary/50 p-4 rounded-[1.5rem] rounded-tl-none text-xs flex gap-1.5 shadow-sm">
-                    <span className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce" />
-                    <span className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce [animation-delay:0.2s]" />
-                    <span className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce [animation-delay:0.4s]" />
-                  </div>
-                </div>
-              )}
-            </div>
-          </ScrollArea>
-
-          <div className="p-4 bg-background/40 border-t border-white/10 flex gap-2 backdrop-blur-2xl">
-            <Input
-              placeholder={`${t('advisor_ask_placeholder')} ${languageNames[settings.language]}...`}
+        {/* Input Area */}
+        <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-background via-background/90 to-transparent pt-12 pb-[10px]">
+          <div className="relative glass rounded-full flex items-center p-1.5">
+            <input
+              type="text"
+              placeholder={`Ask a question...`}
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
-              className="flex-1 border-none bg-muted/50 focus-visible:ring-primary rounded-2xl h-14 px-5 text-sm font-medium"
+              className="w-full bg-transparent outline-none h-[44px] px-4 text-[15px] font-medium text-foreground placeholder:text-muted-foreground/50"
             />
-            <Button size="icon" onClick={handleSendMessage} className="bg-primary hover:bg-primary/90 rounded-2xl h-14 w-14 shrink-0 shadow-xl transition-all active:scale-90">
-              <Send className="w-5 h-5" />
-            </Button>
+            <button 
+              onClick={handleSendMessage}
+              disabled={isTyping || !inputValue.trim()}
+              className="w-11 h-11 shrink-0 rounded-full bg-accent flex items-center justify-center text-background disabled:opacity-50 disabled:bg-surface disabled:text-muted-foreground transition-colors"
+            >
+              <Send className="w-4 h-4 ml-0.5" />
+            </button>
           </div>
-        </Card>
+        </div>
       </section>
+
     </div>
   );
 }

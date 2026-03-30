@@ -1,34 +1,57 @@
 "use client";
 
-import { Leaf, UserCircle, MapPin, Sparkles } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+import { Bell, MapPin, Leaf, User } from 'lucide-react';
 import { useSensors } from '@/context/SensorContext';
 import Link from 'next/link';
+import { useState, useEffect } from 'react';
 
 export function Header() {
   const { settings, t } = useSensors();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => { setMounted(true); }, []);
+  if (!mounted) return null;
 
   return (
-    <header className="px-6 py-5 border-b bg-card/40 backdrop-blur-2xl flex items-center justify-between sticky top-0 z-50 border-white/10">
-      <div className="flex items-center gap-3.5">
-        <div className="bg-primary p-2.5 rounded-[1.2rem] shadow-[0_8px_20px_rgba(56,102,65,0.3)] group transition-all hover:scale-105 active:scale-90">
-          <Leaf className="w-5.5 h-5.5 text-white transition-transform group-hover:rotate-12" />
+    <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border/50">
+      <div className="flex items-center justify-between px-4 md:px-8 h-16 max-w-6xl mx-auto">
+        {/* Left: Logo + farm */}
+        <div className="flex items-center gap-3">
+          {/* Logo visible on mobile only (sidebar has it on desktop) */}
+          <div className="md:hidden w-8 h-8 rounded-lg bg-primary/15 border border-primary/25 flex items-center justify-center">
+            <Leaf className="w-4 h-4 text-primary" />
+          </div>
+          <div>
+            <h1 className="font-display text-base md:text-lg font-bold tracking-tight text-foreground">
+              {t('header_title')}
+            </h1>
+            <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground font-medium">
+              <MapPin className="w-3 h-3 text-primary" />
+              <span className="font-mono text-[10px]">{settings.cropType} · {settings.location.split(',')[0]}</span>
+            </div>
+          </div>
         </div>
-        <div className="space-y-0.5">
-          <div className="flex items-center gap-1.5">
-            <h1 className="text-xl font-black text-primary leading-none tracking-tighter">{t('header_title')}</h1>
-            <Badge variant="outline" className="text-[7px] px-1.5 py-0 border-primary/20 text-primary/60 font-black h-fit uppercase tracking-tighter">DECA IBP 2026</Badge>
-            <Sparkles className="w-3.5 h-3.5 text-accent animate-pulse" />
-          </div>
-          <div className="flex items-center gap-1 text-[9px] text-muted-foreground font-black uppercase tracking-[0.2em]">
-            <MapPin className="w-2.5 h-2.5 text-primary" />
-            <span>{settings.cropType} • {settings.location.split(',')[0]}</span>
-          </div>
+
+        {/* Right: notification + avatar */}
+        <div className="flex items-center gap-2">
+          {/* Notification bell */}
+          <button className="relative p-2.5 text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-xl transition-colors">
+            <Bell className="w-5 h-5" strokeWidth={1.8} />
+            {/* Badge */}
+            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-destructive rounded-full animate-live-dot" />
+          </button>
+
+          {/* User avatar */}
+          <Link
+            href="/settings"
+            className="w-9 h-9 rounded-xl bg-muted/60 border border-border hover:border-primary/30 flex items-center justify-center transition-colors"
+          >
+            <User className="w-4 h-4 text-muted-foreground" strokeWidth={1.8} />
+          </Link>
         </div>
       </div>
-      <Link href="/settings" className="p-2 bg-muted/40 hover:bg-muted rounded-2xl transition-all border border-transparent hover:border-border active:scale-90 shadow-sm">
-        <UserCircle className="w-7 h-7 text-primary/80" />
-      </Link>
+      {/* Gold accent line */}
+      <div className="gold-line" />
     </header>
   );
 }

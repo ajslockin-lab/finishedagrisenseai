@@ -2,43 +2,65 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, Activity, Brain, LayoutGrid, TrendingUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useSensors } from '@/context/SensorContext';
+import { 
+  Home, 
+  Activity, 
+  MessageSquare, 
+  GlassWater, 
+  BookText, 
+  Settings,
+  ScanQrCode
+} from 'lucide-react';
 
 export function Navigation() {
   const pathname = usePathname();
-  const { t } = useSensors();
 
   const navItems = [
-    { label: t('nav_home'), icon: Home, href: '/' },
-    { label: t('nav_advisor'), icon: Brain, href: '/advisor' },
-    { label: t('nav_sensors'), icon: Activity, href: '/sensors' },
-    { label: t('nav_market'), icon: TrendingUp, href: '/prices' },
-    { label: t('nav_more'), icon: LayoutGrid, href: '/more' },
+    { label: 'Home', href: '/', icon: Home },
+    { label: 'Vision', href: '/diagnosis', icon: ScanQrCode },
+    { label: 'Sensors', href: '/sensors', icon: Activity },
+    { label: 'Advisor', href: '/advisor', icon: MessageSquare },
+    { label: 'Forecast', href: '/weather', icon: GlassWater },
+    { label: 'Journal', href: '/journal', icon: BookText },
+    { label: 'Settings', href: '/settings', icon: Settings },
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-card/90 backdrop-blur-xl border-t flex justify-around py-4 px-2 z-50 shadow-[0_-8px_20px_rgba(0,0,0,0.1)] rounded-t-[2.5rem]">
-      {navItems.map((item) => {
-        const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
-        return (
-          <Link
-            key={item.href}
-            href={item.href}
-            className={cn(
-              "flex flex-col items-center gap-1 transition-all duration-300 relative px-3 py-1 rounded-2xl",
-              isActive ? "text-primary bg-primary/5" : "text-muted-foreground"
-            )}
-          >
-            <item.icon className={cn("w-6 h-6", isActive && "fill-primary/20")} strokeWidth={isActive ? 2.5 : 2} />
-            <span className="text-[9px] font-black uppercase tracking-widest">{item.label}</span>
-            {isActive && (
-              <span className="absolute -top-1 w-1.5 h-1.5 bg-primary rounded-full animate-pulse shadow-[0_0_8px_rgba(56,102,65,0.6)]" />
-            )}
-          </Link>
-        );
-      })}
+    <nav className="fixed bottom-0 left-0 right-0 w-full h-[84px] bg-surface border-t border-white/10 flex justify-center z-50 pb-safe shadow-[0_-10px_40px_rgba(0,0,0,0.4)]">
+      <div className="flex justify-between items-center w-full max-w-lg px-2 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+        {navItems.map((item) => {
+          const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={cn(
+                "flex flex-col items-center justify-center min-w-[54px] h-full gap-1.5 transition-all active:scale-90",
+                isActive ? "text-accent" : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              <div className={cn(
+                "w-10 h-6 flex items-center justify-center rounded-full transition-all duration-300",
+                isActive ? "bg-accent/15" : ""
+              )}>
+                <item.icon 
+                  className={cn(
+                    "w-5 h-5 transition-all duration-300", 
+                    isActive ? "stroke-[2.5px]" : "stroke-[1.5px]"
+                  )} 
+                />
+              </div>
+              <span className={cn(
+                "text-[9px] font-bold uppercase tracking-[0.1em] transition-all duration-300",
+                isActive ? "opacity-100" : "opacity-40"
+              )}>
+                {item.label}
+              </span>
+            </Link>
+          );
+        })}
+      </div>
     </nav>
   );
 }

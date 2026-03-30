@@ -2,15 +2,35 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, Activity, Brain, LayoutGrid, TrendingUp } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import {
+  Home, Activity, Brain, LayoutGrid, TrendingUp,
+  ChevronLeft, Leaf, Settings, Cloud, ShieldCheck,
+  BookOpen, FileText, Landmark
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useSensors } from '@/context/SensorContext';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export function Navigation() {
   const pathname = usePathname();
   const { t } = useSensors();
+  const [collapsed, setCollapsed] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
-  const navItems = [
+  useEffect(() => {
+    setMounted(true);
+    const saved = localStorage.getItem('agrisense_sidebar_collapsed');
+    if (saved) setCollapsed(saved === 'true');
+  }, []);
+
+  const toggleCollapse = () => {
+    const next = !collapsed;
+    setCollapsed(next);
+    localStorage.setItem('agrisense_sidebar_collapsed', String(next));
+  };
+
+  const primaryNav = [
     { label: t('nav_home'), icon: Home, href: '/' },
     { label: t('nav_advisor'), icon: Brain, href: '/advisor' },
     { label: t('nav_sensors'), icon: Activity, href: '/sensors' },
@@ -18,27 +38,166 @@ export function Navigation() {
     { label: t('nav_more'), icon: LayoutGrid, href: '/more' },
   ];
 
+  const secondaryNav = [
+    { label: 'Weather', icon: Cloud, href: '/weather' },
+    { label: 'Diagnosis', icon: ShieldCheck, href: '/diagnosis' },
+    { label: 'Journal', icon: FileText, href: '/journal' },
+    { label: 'Schemes', icon: Landmark, href: '/schemes' },
+    { label: 'Education', icon: BookOpen, href: '/education' },
+  ];
+
+  const isActive = (href: string) =>
+    pathname === href || (href !== '/' && pathname.startsWith(href));
+
+  if (!mounted) return null;
+
   return (
-    <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-card/90 backdrop-blur-xl border-t flex justify-around py-4 px-2 z-50 shadow-[0_-8px_20px_rgba(0,0,0,0.1)] rounded-t-[2.5rem]">
-      {navItems.map((item) => {
-        const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
-        return (
+    <>
+      {/* ═══ Desktop Sidebar ═══ */}
+      <aside
+        className={cn(
+          "hidden md:flex flex-col fixed left-0 top-0 bottom-0 z-50 bg-sidebar border-r border-sidebar-border transition-all duration-300",
+          collapsed ? "w-[72px]" : "w-[260px]"
+        )}
+      >
+        {/* Logo area */}
+        <div className={cn(
+          "flex items-center gap-3 px-5 h-16 border-b border-sidebar-border shrink-0",
+          collapsed && "justify-center px-0"
+        )}>
+          <div className="w-9 h-9 rounded-xl bg-primary/15 border border-primary/25 flex items-center justify-center shrink-0">
+            <Leaf className="w-5 h-5 text-primary" />
+          </div>
+          {!collapsed && (
+            <motion.span
+              initial={{ opacity: 0, x: -8 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="font-display text-lg font-bold tracking-tight text-foreground"
+            >
+              AgriSense
+            </motion.span>
+          )}
+        </div>
+
+        {/* Primary nav */}
+        <nav className="flex-1 py-4 px-3 space-y-1 overflow-y-auto">
+          <p className={cn(
+            "text-[9px] font-semibold uppercase tracking-[0.15em] text-muted-foreground mb-2",
+            collapsed ? "text-center" : "px-3"
+          )}>
+            {collapsed ? "—" : "Main"}
+          </p>
+          {primaryNav.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={cn(
+                "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group relative",
+                isActive(item.href)
+                  ? "bg-primary/12 text-primary"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted/50",
+                collapsed && "justify-center px-0"
+              )}
+            >
+              {/* Active indicator bar */}
+              {isActive(item.href) && (
+                <motion.div
+                  layoutId="sidebar-active"
+                  className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 bg-primary rounded-r-full"
+                  transition={{ type: 'spring', bounce: 0.2, duration: 0.4 }}
+                />
+              )}
+              <item.icon className={cn("w-[18px] h-[18px] shrink-0", isActive(item.href) && "text-primary")} strokeWidth={isActive(item.href) ? 2.5 : 1.8} />
+              {!collapsed && (
+                <span className="text-[13px] font-medium tracking-tight">{item.label}</span>
+              )}
+            </Link>
+          ))}
+
+          {/* Separator */}
+          <div className={cn("my-4", collapsed ? "mx-2" : "mx-3")}>
+            <div className="gold-line" />
+          </div>
+
+          <p className={cn(
+            "text-[9px] font-semibold uppercase tracking-[0.15em] text-muted-foreground mb-2",
+            collapsed ? "text-center" : "px-3"
+          )}>
+            {collapsed ? "—" : "Tools"}
+          </p>
+          {secondaryNav.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={cn(
+                "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group",
+                isActive(item.href)
+                  ? "bg-primary/12 text-primary"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted/50",
+                collapsed && "justify-center px-0"
+              )}
+            >
+              <item.icon className={cn("w-[18px] h-[18px] shrink-0", isActive(item.href) && "text-primary")} strokeWidth={isActive(item.href) ? 2.5 : 1.8} />
+              {!collapsed && (
+                <span className="text-[13px] font-medium tracking-tight">{item.label}</span>
+              )}
+            </Link>
+          ))}
+        </nav>
+
+        {/* Collapse toggle + settings */}
+        <div className="border-t border-sidebar-border p-3 space-y-1">
           <Link
-            key={item.href}
-            href={item.href}
+            href="/settings"
             className={cn(
-              "flex flex-col items-center gap-1 transition-all duration-300 relative px-3 py-1 rounded-2xl",
-              isActive ? "text-primary bg-primary/5" : "text-muted-foreground"
+              "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200",
+              isActive('/settings')
+                ? "bg-primary/12 text-primary"
+                : "text-muted-foreground hover:text-foreground hover:bg-muted/50",
+              collapsed && "justify-center px-0"
             )}
           >
-            <item.icon className={cn("w-6 h-6", isActive && "fill-primary/20")} strokeWidth={isActive ? 2.5 : 2} />
-            <span className="text-[9px] font-black uppercase tracking-widest">{item.label}</span>
-            {isActive && (
-              <span className="absolute -top-1 w-1.5 h-1.5 bg-primary rounded-full animate-pulse shadow-[0_0_8px_rgba(56,102,65,0.6)]" />
-            )}
+            <Settings className="w-[18px] h-[18px] shrink-0" strokeWidth={1.8} />
+            {!collapsed && <span className="text-[13px] font-medium tracking-tight">Settings</span>}
           </Link>
-        );
-      })}
-    </nav>
+          <button
+            onClick={toggleCollapse}
+            className={cn(
+              "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 w-full text-muted-foreground hover:text-foreground hover:bg-muted/50",
+              collapsed && "justify-center px-0"
+            )}
+          >
+            <ChevronLeft className={cn("w-[18px] h-[18px] shrink-0 transition-transform duration-300", collapsed && "rotate-180")} strokeWidth={1.8} />
+            {!collapsed && <span className="text-[13px] font-medium tracking-tight">Collapse</span>}
+          </button>
+        </div>
+      </aside>
+
+      {/* ═══ Mobile Bottom Navigation ═══ */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-xl border-t border-border">
+        <div className="flex justify-around items-center py-2 px-1 max-w-lg mx-auto">
+          {primaryNav.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={cn(
+                "flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl transition-colors relative",
+                isActive(item.href) ? "text-primary" : "text-muted-foreground"
+              )}
+            >
+              <item.icon className="w-5 h-5" strokeWidth={isActive(item.href) ? 2.5 : 2} />
+              <span className="text-[9px] font-semibold tracking-wide">{item.label}</span>
+              {isActive(item.href) && (
+                <motion.div
+                  layoutId="mobile-nav-active"
+                  className="absolute -top-0.5 w-5 h-[2px] bg-primary rounded-full"
+                  transition={{ type: 'spring', bounce: 0.2, duration: 0.4 }}
+                />
+              )}
+            </Link>
+          ))}
+        </div>
+      </nav>
+    </>
   );
 }

@@ -1,12 +1,9 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { Plus, Trash2, Calendar as CalIcon, StickyNote } from 'lucide-react';
-import { useSensors } from '@/context/SensorContext';
 import { format } from 'date-fns';
+import { cn } from '@/lib/utils';
+import { BookOpen, Calendar, Trash2, Plus, PenLine } from 'lucide-react';
 
 interface JournalEntry {
   id: string;
@@ -15,11 +12,12 @@ interface JournalEntry {
 }
 
 export default function FarmJournal() {
-  const { t } = useSensors();
   const [entries, setEntries] = useState<JournalEntry[]>([]);
   const [newNote, setNewNote] = useState('');
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     const saved = localStorage.getItem('agrisense_journal');
     if (saved) setEntries(JSON.parse(saved));
   }, []);
@@ -33,8 +31,8 @@ export default function FarmJournal() {
     if (!newNote.trim()) return;
     const entry: JournalEntry = {
       id: Date.now().toString(),
-      date: format(new Date(), 'PPP'),
-      content: newNote
+      date: format(new Date(), 'MMMM d, yyyy'),
+      content: newNote.trim()
     };
     saveEntries([entry, ...entries]);
     setNewNote('');
@@ -44,57 +42,87 @@ export default function FarmJournal() {
     saveEntries(entries.filter(e => e.id !== id));
   };
 
+  if (!mounted) return null;
+
   return (
-    <div className="space-y-6 pb-24 animate-in fade-in slide-in-from-right-4 duration-500">
-      <div className="px-2">
-        <h2 className="text-2xl font-black text-primary flex items-center gap-2">
-          <StickyNote className="w-6 h-6" />
-          {t('journal_title')}
-        </h2>
-        <p className="text-[10px] text-muted-foreground font-black uppercase tracking-widest mt-1">Private field logs</p>
+    <div className="min-h-screen w-full flex flex-col pt-6 pb-[100px] px-4 gap-6 bg-background">
+      
+      <header className="px-2">
+        <h1 className="text-3xl font-bold tracking-tight text-foreground">
+          Journal
+        </h1>
+        <div className="flex items-center gap-1.5 text-muted-foreground mt-1">
+          <BookOpen className="w-3.5 h-3.5" />
+          <span className="text-xs font-semibold uppercase tracking-wider">Field Observations</span>
+        </div>
+      </header>
+
+      {/* Input Section - Tactile Card */}
+      <div className="glass rounded-[2rem] p-5 border border-white/5 bg-surface relative shadow-xl overflow-hidden focus-within:ring-2 focus-within:ring-accent/50 transition-all">
+        <div className="absolute top-0 right-0 w-32 h-32 bg-accent/5 rounded-full blur-[40px] pointer-events-none" />
+        
+        <textarea
+          value={newNote}
+          onChange={(e) => setNewNote(e.target.value)}
+          placeholder="Record a thought from the fields..."
+          className="w-full bg-transparent border-none focus:ring-0 text-[17px] font-medium text-foreground placeholder:text-muted-foreground/40 min-h-[120px] resize-none outline-none leading-relaxed relative z-10"
+        />
+        
+        <div className="flex justify-between items-center mt-4 border-t border-white/5 pt-4 relative z-10">
+           <div className="flex items-center gap-1.5 text-muted-foreground/70">
+             <Calendar className="w-3.5 h-3.5" />
+             <span className="text-[10px] font-bold uppercase tracking-wider">
+               {format(new Date(), 'MMM d, yyyy')}
+             </span>
+           </div>
+           <button 
+             onClick={handleAddEntry}
+             disabled={!newNote.trim()}
+             className="flex items-center gap-1.5 h-9 px-4 rounded-full bg-accent text-background text-xs font-bold uppercase tracking-wider hover:bg-accent/90 focus:scale-95 transition-all disabled:opacity-50 disabled:bg-surface disabled:text-muted-foreground disabled:border disabled:border-white/10"
+           >
+             <Plus className="w-3.5 h-3.5" />
+             Save
+           </button>
+        </div>
       </div>
 
-      <Card className="border-none shadow-xl bg-card/40 backdrop-blur-xl rounded-[2rem] border border-white/20">
-        <CardContent className="p-6 space-y-4">
-          <Textarea 
-            placeholder={t('journal_placeholder')}
-            value={newNote}
-            onChange={(e) => setNewNote(e.target.value)}
-            className="min-h-[120px] rounded-2xl bg-muted/50 border-none focus-visible:ring-primary text-sm font-medium"
-          />
-          <Button onClick={handleAddEntry} className="w-full h-14 rounded-2xl bg-primary hover:bg-primary/90 font-black gap-2 shadow-lg">
-            <Plus className="w-5 h-5" />
-            Add Observation
-          </Button>
-        </CardContent>
-      </Card>
-
+      {/* Entries List - Structured Cards */}
       <div className="space-y-4">
-        {entries.map(entry => (
-          <Card key={entry.id} className="border-none shadow-sm bg-card/40 backdrop-blur-md rounded-[1.5rem] group border border-white/10">
-            <CardContent className="p-5 space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 text-[10px] font-black text-primary uppercase tracking-widest">
-                  <CalIcon className="w-3 h-3" />
-                  {entry.date}
-                </div>
-                <button onClick={() => handleDelete(entry.id)} className="text-muted-foreground hover:text-destructive transition-colors">
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
-              <p className="text-sm font-medium text-foreground leading-relaxed">
+        {entries.map((entry, index) => (
+          <article key={entry.id} className="glass rounded-[1.5rem] p-5 border border-white/5 bg-surface/50 group hover:bg-surface transition-colors shadow-sm">
+            <div className="flex justify-between items-start mb-3">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-accent/80 flex items-center gap-1.5">
+                <PenLine className="w-3 h-3" />
+                Entry N° {entries.length - index}
+              </span>
+              <button 
+                onClick={() => handleDelete(entry.id)}
+                className="w-8 h-8 rounded-full flex items-center justify-center text-muted-foreground/40 hover:bg-danger/10 hover:text-danger focus:scale-95 transition-all"
+                aria-label="Delete entry"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            </div>
+            
+            <div className="space-y-2">
+              <h3 className="text-xs font-bold text-muted-foreground tracking-wider uppercase">
+                {entry.date}
+              </h3>
+              <p className="text-[16px] font-medium text-foreground/90 leading-relaxed whitespace-pre-wrap">
                 {entry.content}
               </p>
-            </CardContent>
-          </Card>
+            </div>
+          </article>
         ))}
+
         {entries.length === 0 && (
-          <div className="text-center py-12 opacity-30">
-            <StickyNote className="w-12 h-12 mx-auto mb-2" />
-            <p className="text-xs font-black uppercase tracking-widest">No entries yet</p>
+          <div className="py-20 flex flex-col items-center justify-center text-center opacity-40">
+            <BookOpen className="w-12 h-12 mb-4 text-muted-foreground" />
+            <p className="text-lg font-bold text-muted-foreground">The pages are waiting...</p>
           </div>
         )}
       </div>
+
     </div>
   );
 }

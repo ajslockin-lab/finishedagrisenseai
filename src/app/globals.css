@@ -2,50 +2,60 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ═══════════════════════════════════════════
+   AgriSenseAI — Aperture Spatial Design System
+   Ethereal, Apple-esque, Fluid, Spatial
+   ═══════════════════════════════════════════ */
+
 @layer base {
   :root {
-    --background: 135 40% 98%;
-    --foreground: 135 40% 5%;
-    --card: 0 0% 100%;
-    --card-foreground: 135 40% 10%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 135 40% 10%;
-    --primary: 135 40% 28%;
-    --primary-foreground: 135 40% 98%;
-    --secondary: 135 25% 94%;
-    --secondary-foreground: 135 40% 28%;
-    --muted: 135 15% 94%;
-    --muted-foreground: 135 15% 40%;
-    --accent: 38 90% 58%;
-    --accent-foreground: 135 40% 5%;
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 135 20% 90%;
-    --input: 135 20% 90%;
-    --ring: 135 40% 28%;
-    --radius: 1.5rem;
-  }
+    /* Pure deep background to allow frost elements to float */
+    --background: 140 10% 2%;          /* #050605 essentially OLED black with tiny green lean */
+    --foreground: 0 0% 98%;            /* Pure white with subpixel anti-aliasing */
 
-  .dark {
-    --background: 135 45% 4%;
-    --foreground: 135 20% 96%;
-    --card: 135 45% 6%;
-    --card-foreground: 135 20% 96%;
-    --popover: 135 45% 6%;
-    --popover-foreground: 135 20% 96%;
-    --primary: 135 45% 45%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 135 40% 10%;
-    --secondary-foreground: 135 20% 90%;
-    --muted: 135 40% 12%;
-    --muted-foreground: 135 15% 65%;
-    --accent: 38 90% 58%;
-    --accent-foreground: 135 40% 5%;
-    --destructive: 0 63% 31%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 135 40% 14%;
-    --input: 135 40% 14%;
-    --ring: 135 45% 45%;
+    --card: 140 10% 4%;                
+    --card-foreground: 0 0% 98%;
+
+    --popover: 140 10% 4%;
+    --popover-foreground: 0 0% 98%;
+
+    --primary: 40 70% 66%;             /* #E5C16C Gold */
+    --primary-foreground: 140 10% 2%;
+
+    --secondary: 100 20% 56%;          /* #88A37A Sage */
+    --secondary-foreground: 140 10% 2%;
+
+    --muted: 140 10% 8%;               /* Very dark subtle highlight */
+    --muted-foreground: 140 5% 55%;    /* Soft, highly legible grey */
+
+    --accent: 100 20% 56%;
+    --accent-foreground: 140 10% 2%;
+
+    --destructive: 20 60% 57%;         /* #D27B50 Rust */
+    --destructive-foreground: 140 10% 2%;
+
+    --border: 140 10% 12%;             /* Subtle dividing lines */
+    --input: 140 10% 10%;
+    --ring: 40 70% 66%;
+
+    --radius: 1.25rem;                 /* Beautifully rounded, modern Apple corners */
+
+    /* Chart palette */
+    --chart-1: 40 70% 66%;
+    --chart-2: 100 20% 56%;
+    --chart-3: 20 60% 57%;
+    --chart-4: 180 30% 45%;
+    --chart-5: 40 30% 75%;
+
+    /* Sidebar */
+    --sidebar-background: 140 10% 3%;
+    --sidebar-foreground: 0 0% 98%;
+    --sidebar-primary: 40 70% 66%;
+    --sidebar-primary-foreground: 140 10% 2%;
+    --sidebar-accent: 140 10% 8%;
+    --sidebar-accent-foreground: 0 0% 98%;
+    --sidebar-border: 140 10% 10%;
+    --sidebar-ring: 40 70% 66%;
   }
 }
 
@@ -53,39 +63,87 @@
   * {
     @apply border-border;
   }
+
   body {
-    @apply bg-background text-foreground transition-colors duration-200 ease-in-out;
+    @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
     -webkit-tap-highlight-color: transparent;
+    /* Soften text rendering for premium feel */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  html {
+    color-scheme: dark;
   }
 }
 
-.glass {
-  @apply bg-card/60 backdrop-blur-xl border border-white/20 dark:border-white/5;
+/* ═══════════════════════════════════════════
+   Spatial Frost & Glass
+   ═══════════════════════════════════════════ */
+.glass-panel {
+  @apply backdrop-blur-[40px] bg-white/[0.02] shadow-frost;
+  /* Add an extremely subtle noise ONLY to the glass to prevent banding, 
+     not a harsh grain over the whole screen */
+  background-image: 
+    linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.005) 100%),
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.5' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.02'/%3E%3C/svg%3E");
 }
 
+/* ═══════════════════════════════════════════
+   Typography Utilities
+   ═══════════════════════════════════════════ */
+.font-display {
+  font-family: var(--font-dm-sans), 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  letter-spacing: -0.02em;
+}
+.font-body {
+  font-family: var(--font-dm-sans), 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+.font-mono-data {
+  font-family: var(--font-ibm-plex-mono), 'IBM Plex Mono', monospace;
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+/* ═══════════════════════════════════════════
+   Component Specifics
+   ═══════════════════════════════════════════ */
 .health-gradient-excellent {
-  background: linear-gradient(135deg, #2d5a27 0%, #4a7c44 100%);
+  background: radial-gradient(circle at top left, rgba(136,163,122,0.15), transparent 70%);
 }
-
 .health-gradient-warning {
-  background: linear-gradient(135deg, #9b2226 0%, #d62828 100%);
+  background: radial-gradient(circle at top left, rgba(210,123,80,0.15), transparent 70%);
 }
 
-.text-glow {
-  text-shadow: 0 0 10px rgba(255, 255, 255, 0.4);
+.text-glow-subtle {
+  text-shadow: 0 0 24px rgba(255,255,255,0.2);
 }
 
-.shadow-premium {
-  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.1);
+.active-scale-smooth {
+  @apply transition-transform active:scale-[0.97] duration-300 ease-[cubic-bezier(0.2,0.8,0.2,1)];
 }
 
-.active-scale {
-  @apply transition-transform active:scale-95 duration-200;
-}
-
-/* Custom scrollbar for a cleaner mobile look */
+/* Fluid scrollbar */
 ::-webkit-scrollbar {
-  width: 0px;
+  width: 6px;
+}
+::-webkit-scrollbar-track {
   background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.1);
+  border-radius: 12px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255,255,255,0.2);
+}
+
+/* Recharts tooltip override - frosted */
+.recharts-tooltip-wrapper .recharts-default-tooltip {
+  background: rgba(10, 10, 10, 0.6) !important;
+  backdrop-filter: blur(20px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 1rem !important;
+  color: hsl(var(--foreground)) !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4) !important;
 }

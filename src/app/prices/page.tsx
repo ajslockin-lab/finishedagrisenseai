@@ -1,27 +1,19 @@
 "use client";
 
 import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import {
-  TrendingUp,
-  TrendingDown,
-  Activity,
-  MapPin,
-  ArrowUpRight,
-  ArrowDownRight,
-  Sparkles,
-  AlertCircle,
-  Coins,
-  Sprout
+  TrendingUp, TrendingDown, Activity, MapPin, ArrowUpRight, ArrowDownRight,
+  Sparkles, Coins, Sprout
 } from 'lucide-react';
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 import { useSensors } from '@/context/SensorContext';
+import { cn } from '@/lib/utils';
+import { motion } from 'framer-motion';
 
-// Mock Data for Charts
 const priceHistory = [
   { day: 'D1', wheat: 2100, rice: 3800, cotton: 6200, maize: 1900 },
   { day: 'D2', wheat: 2150, rice: 3850, cotton: 6300, maize: 1950 },
@@ -31,7 +23,6 @@ const priceHistory = [
   { day: 'D6', wheat: 2300, rice: 3950, cotton: 6800, maize: 2050 },
 ];
 
-// Mock Data for Market Trends
 const trendingCrops = [
   { name: 'Cotton (Kapus)', trend: '+6.2%', price: '₹6,800', status: 'booming', icon: '🧶' },
   { name: 'Wheat (Gehu)', trend: '+4.2%', price: '₹2,300', status: 'booming', icon: '🌾' },
@@ -56,6 +47,11 @@ const pricesByState: Record<string, any[]> = {
   ],
 };
 
+const stagger = {
+  container: { hidden: {}, visible: { transition: { staggerChildren: 0.08 } } },
+  item: { hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0, transition: { duration: 0.45, ease: "easeOut" } } },
+} as const;
+
 export default function MarketPrices() {
   const { settings, t } = useSensors();
   const state = settings.location.split(', ')[1] || 'Punjab';
@@ -63,170 +59,184 @@ export default function MarketPrices() {
   const boomingCount = trendingCrops.filter(c => c.status === 'booming').length;
   const decliningCount = trendingCrops.filter(c => c.status === 'declining').length;
 
+  const statusConfig: Record<string, { border: string; badge: string; badgeText: string }> = {
+    booming: { border: 'border-l-sage', badge: 'bg-sage/10 text-sage border-sage/25', badgeText: 'text-sage' },
+    declining: { border: 'border-l-destructive', badge: 'bg-destructive/10 text-destructive border-destructive/25', badgeText: 'text-destructive' },
+    stable: { border: 'border-l-primary', badge: 'bg-primary/10 text-primary border-primary/25', badgeText: 'text-primary' },
+  };
+
   return (
-    <div className="space-y-6 pb-24">
-      <div className="flex items-center justify-between">
+    <motion.div
+      className="space-y-6"
+      variants={stagger.container}
+      initial="hidden"
+      animate="visible"
+    >
+      {/* Header */}
+      <motion.div variants={stagger.item} className="flex items-center gap-3 px-1">
+        <div className="bg-muted/50 border border-border/50 p-2.5 rounded-xl">
+          <TrendingUp className="w-5 h-5 text-primary" />
+        </div>
         <div>
-          <h2 className="text-2xl font-bold text-primary">{t('prices_title')}</h2>
-          <p className="text-sm text-muted-foreground">{t('prices_subtitle')}</p>
+          <h2 className="font-display text-xl md:text-2xl font-bold tracking-tight text-foreground">{t('prices_title')}</h2>
+          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.15em]">{t('prices_subtitle')}</p>
         </div>
-        <div className="bg-primary/10 p-2 rounded-full">
-          <TrendingUp className="w-6 h-6 text-primary" />
-        </div>
-      </div>
+      </motion.div>
 
-      <Tabs defaultValue="trends" className="w-full">
-        <TabsList className="grid w-full grid-cols-3 bg-muted/50 p-1 mb-6">
-          <TabsTrigger value="trends" className="text-xs font-bold">🔥 {t('prices_tab_trends')}</TabsTrigger>
-          <TabsTrigger value="prices" className="text-xs font-bold">💰 {t('prices_tab_local')}</TabsTrigger>
-          <TabsTrigger value="profit" className="text-xs font-bold">✨ {t('prices_tab_profit')}</TabsTrigger>
-        </TabsList>
+      <motion.div variants={stagger.item}>
+        <Tabs defaultValue="trends" className="w-full">
+          <TabsList className="bg-muted/30 border border-border/50 p-1 mb-6 w-full grid grid-cols-3">
+            <TabsTrigger value="trends" className="text-xs font-semibold data-[state=active]:bg-primary/15 data-[state=active]:text-primary rounded-md">🔥 {t('prices_tab_trends')}</TabsTrigger>
+            <TabsTrigger value="prices" className="text-xs font-semibold data-[state=active]:bg-primary/15 data-[state=active]:text-primary rounded-md">💰 {t('prices_tab_local')}</TabsTrigger>
+            <TabsTrigger value="profit" className="text-xs font-semibold data-[state=active]:bg-primary/15 data-[state=active]:text-primary rounded-md">✨ {t('prices_tab_profit')}</TabsTrigger>
+          </TabsList>
 
-        {/* --- TAB 1: MARKET TRENDS --- */}
-        <TabsContent value="trends" className="space-y-6 animate-in fade-in-50 slide-in-from-bottom-2">
-
-          {/* Summary Boxes */}
-          <div className="grid grid-cols-2 gap-3">
-            <div className="bg-green-50 dark:bg-green-950/40 border border-green-100 dark:border-green-900/50 p-3 rounded-xl flex flex-col items-center justify-center text-center space-y-1">
-              <span className="text-2xl font-black text-green-600 dark:text-green-500">{boomingCount}</span>
-              <span className="text-xs font-bold text-green-800 dark:text-green-400 uppercase tracking-wide">🚀 {t('prices_booming')}</span>
+          {/* TAB 1: MARKET TRENDS */}
+          <TabsContent value="trends" className="space-y-6">
+            {/* Summary */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="bg-sage/8 border border-sage/20 p-3 rounded-xl flex flex-col items-center justify-center text-center space-y-1">
+                <span className="font-mono text-2xl font-bold tracking-tight text-sage">{boomingCount}</span>
+                <span className="text-[9px] font-bold text-sage uppercase tracking-[0.15em]">🚀 {t('prices_booming')}</span>
+              </div>
+              <div className="bg-destructive/8 border border-destructive/20 p-3 rounded-xl flex flex-col items-center justify-center text-center space-y-1">
+                <span className="font-mono text-2xl font-bold tracking-tight text-destructive">{decliningCount}</span>
+                <span className="text-[9px] font-bold text-destructive uppercase tracking-[0.15em]">📉 {t('prices_declining')}</span>
+              </div>
             </div>
-            <div className="bg-red-50 dark:bg-red-950/40 border border-red-100 dark:border-red-900/50 p-3 rounded-xl flex flex-col items-center justify-center text-center space-y-1">
-              <span className="text-2xl font-black text-red-600 dark:text-red-500">{decliningCount}</span>
-              <span className="text-xs font-bold text-red-800 dark:text-red-400 uppercase tracking-wide">📉 {t('prices_declining')}</span>
-            </div>
-          </div>
 
-          {/* Trending List */}
-          <div className="space-y-3">
-            <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-widest pl-1">{t('prices_movers')}</h3>
-            {trendingCrops.map((crop, i) => (
-              <Card key={i} className={`border-l-4 shadow-sm overflow-hidden ${crop.status === 'booming' ? 'border-l-green-500' :
-                crop.status === 'declining' ? 'border-l-red-500' : 'border-l-yellow-500'
-                }`}>
-                <CardContent className="p-3 flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <span className="text-xl bg-muted/30 p-2 rounded-lg">{crop.icon}</span>
+            {/* Trending List */}
+            <div className="space-y-3">
+              <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.15em] pl-1">{t('prices_movers')}</h3>
+              {trendingCrops.map((crop, i) => {
+                const cfg = statusConfig[crop.status] || statusConfig.stable;
+                return (
+                  <Card key={i} className={cn(
+                    "border-l-4 rounded-xl overflow-hidden bg-card/80 border border-border/50 transition-colors hover:border-primary/20",
+                    cfg.border
+                  )}>
+                    <CardContent className="p-3.5 flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <span className="text-xl bg-muted/30 border border-border/30 p-2 rounded-lg">{crop.icon}</span>
+                        <div>
+                          <h4 className="font-semibold text-sm text-foreground">{crop.name}</h4>
+                          <p className="text-[10px] uppercase font-medium tracking-wider text-muted-foreground mt-0.5">
+                            Current: <span className="text-foreground font-mono ml-0.5">{crop.price}/q</span>
+                          </p>
+                        </div>
+                      </div>
+                      <Badge variant="outline" className={cn("flex items-center gap-1 font-bold text-[10px] px-2 py-0.5 rounded-md", cfg.badge)}>
+                        {crop.status === 'booming' ? <TrendingUp className="w-3 h-3" /> :
+                          crop.status === 'declining' ? <TrendingDown className="w-3 h-3" /> :
+                            <Activity className="w-3 h-3" />}
+                        {crop.trend}
+                      </Badge>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          </TabsContent>
+
+          {/* TAB 2: LOCAL PRICES */}
+          <TabsContent value="prices" className="space-y-6">
+            <div className="flex items-center gap-2 bg-muted/30 px-3 py-1.5 rounded-lg border border-border/50 w-fit mx-auto">
+              <MapPin className="w-3.5 h-3.5 text-primary" />
+              <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.15em]">{t('prices_mandi_prices')} — {settings.location}</span>
+            </div>
+
+            <Card className="border border-border/50 bg-card/80 rounded-2xl overflow-hidden">
+              <CardHeader className="pb-2 pt-4 px-5">
+                <CardTitle className="text-sm font-semibold text-foreground">{t('prices_chart_title')}</CardTitle>
+              </CardHeader>
+              <CardContent className="p-2 h-[220px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={priceHistory} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(132 10% 22%)" opacity={0.5} />
+                    <XAxis dataKey="day" fontSize={10} axisLine={false} tickLine={false} tick={{ fill: 'hsl(40 12% 60%)' }} dy={10} />
+                    <YAxis fontSize={10} axisLine={false} tickLine={false} domain={[0, 8000]} tick={{ fill: 'hsl(40 12% 60%)' }} dx={-10} />
+                    <Tooltip
+                      contentStyle={{ borderRadius: '10px', border: '1px solid hsl(132 10% 22%)', background: 'hsl(132 16% 14%)', fontSize: '12px', padding: '8px 14px', color: 'hsl(40 25% 92%)' }}
+                      itemStyle={{ fontWeight: 600, color: 'hsl(40 25% 92%)' }}
+                    />
+                    <Line type="monotone" dataKey="wheat" stroke="#D4A843" strokeWidth={2.5} dot={false} activeDot={{ r: 4, strokeWidth: 0, fill: '#D4A843' }} />
+                    <Line type="monotone" dataKey="rice" stroke="#6B8F5E" strokeWidth={2.5} dot={false} activeDot={{ r: 4, strokeWidth: 0, fill: '#6B8F5E' }} />
+                    <Line type="monotone" dataKey="cotton" stroke="#8AACB8" strokeWidth={2.5} dot={false} activeDot={{ r: 4, strokeWidth: 0, fill: '#8AACB8' }} />
+                    <Line type="monotone" dataKey="maize" stroke="#C0622A" strokeWidth={2.5} dot={false} activeDot={{ r: 4, strokeWidth: 0, fill: '#C0622A' }} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+
+            <div className="space-y-2.5">
+              {currentPrices.map((crop: any, i: number) => (
+                <Card key={i} className="border border-border/50 bg-card/80 rounded-xl overflow-hidden hover:border-primary/20 transition-colors">
+                  <CardContent className="p-4 flex items-center justify-between">
                     <div>
-                      <h4 className="font-bold text-sm">{crop.name}</h4>
-                      <p className="text-xs text-muted-foreground">Current: {crop.price}/q</p>
+                      <p className="font-semibold text-sm text-foreground">{crop.name}</p>
+                      <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mt-0.5">Prev: <span className="font-mono">₹{crop.prev}</span></p>
                     </div>
-                  </div>
-                  <Badge variant="outline" className={`flex items-center gap-1 font-bold ${crop.status === 'booming' ? 'bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800' :
-                    crop.status === 'declining' ? 'bg-red-50 text-red-700 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800' :
-                      'bg-yellow-50 text-yellow-700 border-yellow-200 dark:bg-yellow-900/20 dark:text-yellow-400 dark:border-yellow-800'
-                    }`}>
-                    {crop.status === 'booming' ? <TrendingUp className="w-3 h-3" /> :
-                      crop.status === 'declining' ? <TrendingDown className="w-3 h-3" /> :
-                        <Activity className="w-3 h-3" />}
-                    {crop.trend}
-                  </Badge>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </TabsContent>
+                    <div className="text-right">
+                      <p className="font-mono font-bold text-lg tracking-tight text-foreground">₹{crop.current.toLocaleString()}</p>
+                      <p className={cn(
+                        "text-[10px] font-bold flex items-center justify-end gap-1 mt-0.5",
+                        crop.up ? 'text-sage' : 'text-destructive'
+                      )}>
+                        {crop.up ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
+                        {crop.trend}
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </TabsContent>
 
-        {/* --- TAB 2: LOCAL PRICES (Existing Logic) --- */}
-        <TabsContent value="prices" className="space-y-6 animate-in fade-in-50 slide-in-from-bottom-2">
-
-          <div className="flex items-center gap-2 bg-white dark:bg-card px-3 py-2 rounded-full border border-border/50 shadow-sm w-fit mx-auto">
-            <MapPin className="w-3 h-3 text-primary" />
-            <span className="text-[10px] font-bold text-muted-foreground">{t('prices_mandi_prices')} — {settings.location}</span>
-          </div>
-
-          <Card className="border-none shadow-sm overflow-hidden">
-            <CardHeader className="pb-0">
-              <CardTitle className="text-sm font-bold">{t('prices_chart_title')}</CardTitle>
-            </CardHeader>
-            <CardContent className="p-2 h-[220px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={priceHistory}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                  <XAxis dataKey="day" fontSize={10} axisLine={false} tickLine={false} />
-                  <YAxis fontSize={10} axisLine={false} tickLine={false} domain={[0, 8000]} />
-                  <Tooltip />
-                  <Line type="monotone" dataKey="wheat" stroke="#ECAA53" strokeWidth={2} dot={false} />
-                  <Line type="monotone" dataKey="rice" stroke="#386641" strokeWidth={2} dot={false} />
-                  <Line type="monotone" dataKey="cotton" stroke="#3b82f6" strokeWidth={2} dot={false} />
-                  <Line type="monotone" dataKey="maize" stroke="#f97316" strokeWidth={2} dot={false} />
-                </LineChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-
-          <div className="grid grid-cols-1 gap-3">
-            {currentPrices.map((crop, i) => (
-              <div key={i} className="flex items-center justify-between p-4 bg-muted/20 rounded-xl border border-border/50">
+          {/* TAB 3: PROFIT GUIDE */}
+          <TabsContent value="profit" className="space-y-4">
+            <Card className="border border-primary/20 bg-card/80 rounded-2xl">
+              <CardContent className="p-6 text-center space-y-4">
+                <div className="bg-primary/10 border border-primary/20 w-12 h-12 rounded-xl flex items-center justify-center mx-auto">
+                  <Sparkles className="w-6 h-6 text-primary" />
+                </div>
                 <div>
-                  <p className="font-bold text-sm">{crop.name}</p>
-                  <p className="text-xs text-muted-foreground">Prev: ₹{crop.prev}</p>
+                  <h3 className="font-display font-bold text-base text-foreground">{t('prices_ai_calc')}</h3>
+                  <p className="text-xs text-muted-foreground font-medium mt-1">{t('prices_reco_desc')}</p>
                 </div>
-                <div className="text-right">
-                  <p className="font-black text-lg">₹{crop.current.toLocaleString()}</p>
-                  <p className={`text-xs font-bold flex items-center justify-end gap-1 ${crop.up ? 'text-green-600' : 'text-red-600'}`}>
-                    {crop.up ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
-                    {crop.trend}
-                  </p>
+                <Button className="w-full font-semibold h-10 bg-primary text-primary-foreground rounded-xl shadow-premium">
+                  {t('prices_gen_report')}
+                </Button>
+              </CardContent>
+            </Card>
+
+            <div className="space-y-3 pt-2">
+              <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.15em] pl-1">{t('prices_best_opp')}</h3>
+
+              <div className="p-4 rounded-xl bg-primary/5 border border-primary/20 space-y-2">
+                <div className="flex items-center gap-2">
+                  <Sprout className="w-4 h-4 text-primary" />
+                  <h4 className="font-bold text-sm text-foreground">{t('prices_maize_switch' as any)}</h4>
                 </div>
+                <p className="text-xs text-muted-foreground font-medium leading-relaxed">{t('prices_maize_desc' as any)}</p>
+                <Badge variant="outline" className="bg-primary/10 text-primary border-primary/25 text-[9px] uppercase font-bold tracking-wider">
+                  {t('prices_profit_acre' as any)}
+                </Badge>
               </div>
-            ))}
-          </div>
-        </TabsContent>
 
-        {/* --- TAB 3: PROFIT GUIDE --- */}
-        <TabsContent value="profit" className="space-y-4 animate-in fade-in-50 slide-in-from-bottom-2">
-
-          <Card className="bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
-            <CardContent className="p-6 text-center space-y-4">
-              <div className="bg-white w-12 h-12 rounded-full flex items-center justify-center mx-auto shadow-sm">
-                <Sparkles className="w-6 h-6 text-primary" />
+              <div className="p-4 rounded-xl bg-sage/5 border border-sage/20 space-y-2">
+                <div className="flex items-center gap-2">
+                  <Coins className="w-4 h-4 text-sage" />
+                  <h4 className="font-bold text-sm text-foreground">{t('prices_cotton_hold' as any)}</h4>
+                </div>
+                <p className="text-xs text-muted-foreground font-medium leading-relaxed">{t('prices_cotton_desc' as any)}</p>
+                <Badge variant="outline" className="bg-sage/10 text-sage border-sage/25 text-[9px] uppercase font-bold tracking-wider">
+                  {t('prices_cotton_proj' as any)}
+                </Badge>
               </div>
-              <div>
-                <h3 className="font-bold text-lg text-primary">{t('prices_ai_calc')}</h3>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {t('prices_reco_desc')}
-                </p>
-              </div>
-              <Button className="w-full font-bold shadow-lg shadow-primary/20">
-                {t('prices_gen_report')}
-              </Button>
-            </CardContent>
-          </Card>
-
-          <div className="space-y-3">
-            <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-widest pl-1">{t('prices_best_opp')}</h3>
-
-            <div className="p-4 rounded-xl bg-orange-50 dark:bg-orange-950/30 border border-orange-100 dark:border-orange-900/50 space-y-2">
-              <div className="flex items-center gap-2">
-                <Sprout className="w-5 h-5 text-orange-600 dark:text-orange-500" />
-                <h4 className="font-bold text-orange-800 dark:text-orange-400">{t('prices_maize_switch' as any)}</h4>
-              </div>
-              <p className="text-xs text-orange-900/70 dark:text-orange-200/70 leading-relaxed">
-                {t('prices_maize_desc' as any)}
-              </p>
-              <Badge variant="secondary" className="bg-white/50 dark:bg-black/20 text-orange-800 dark:text-orange-400 border-orange-200 dark:border-orange-800">
-                {t('prices_profit_acre' as any)}
-              </Badge>
             </div>
-
-            <div className="p-4 rounded-xl bg-blue-50 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900/50 space-y-2">
-              <div className="flex items-center gap-2">
-                <Coins className="w-5 h-5 text-blue-600 dark:text-blue-500" />
-                <h4 className="font-bold text-blue-800 dark:text-blue-400">{t('prices_cotton_hold' as any)}</h4>
-              </div>
-              <p className="text-xs text-blue-900/70 dark:text-blue-200/70 leading-relaxed">
-                {t('prices_cotton_desc' as any)}
-              </p>
-              <Badge variant="secondary" className="bg-white/50 dark:bg-black/20 text-blue-800 dark:text-blue-400 border-blue-200 dark:border-blue-800">
-                {t('prices_cotton_proj' as any)}
-              </Badge>
-            </div>
-
-          </div>
-
-        </TabsContent>
-      </Tabs>
-    </div>
+          </TabsContent>
+        </Tabs>
+      </motion.div>
+    </motion.div>
   );
 }

@@ -1,108 +1,105 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Cloud, Sun, CloudRain, CloudLightning, Wind, Droplets } from 'lucide-react';
 import { useSensors } from '@/context/SensorContext';
+import { cn } from '@/lib/utils';
+import { Cloud, Sun, CloudRain, Droplets, Wind, MapPin, Sparkles } from 'lucide-react';
 
 const forecast = [
-  { day: 'Today', icon: '☀️', temp: 28, rain: '10%', cond: 'Sunny' },
-  { day: 'Sat, Jan 31', icon: '☀️', temp: 28, rain: '10%', cond: 'Ideal conditions' },
-  { day: 'Sun, Feb 1', icon: '⛅', temp: 27, rain: '30%', cond: 'Ideal conditions' },
-  { day: 'Mon, Feb 2', icon: '☁️', temp: 26, rain: '70%', cond: 'Cloudy' },
-  { day: 'Tue, Feb 3', icon: '🌧️', temp: 24, rain: '85%', cond: 'Light Rain' },
-  { day: 'Wed, Feb 4', icon: '🌧️', temp: 25, rain: '85%', cond: 'Rain' },
-  { day: 'Thu, Feb 5', icon: '⛅', temp: 26, rain: '30%', cond: 'Partly Cloudy' },
-  { day: 'Fri, Feb 6', icon: '☀️', temp: 29, rain: '5%', cond: 'Sunny' },
+  { day: 'Friday', date: 'Jan 30', icon: Sun, temp: 28, cond: 'Clear' },
+  { day: 'Saturday', date: 'Jan 31', icon: Sun, temp: 28, cond: 'Clear' },
+  { day: 'Sunday', date: 'Feb 1', icon: Cloud, temp: 27, cond: 'Cloudy' },
+  { day: 'Monday', date: 'Feb 2', icon: Cloud, temp: 26, cond: 'Cloudy' },
+  { day: 'Tuesday', date: 'Feb 3', icon: CloudRain, temp: 24, cond: 'Rain' },
+  { day: 'Wednesday', date: 'Feb 4', icon: CloudRain, temp: 25, cond: 'Rain' },
 ];
 
 export default function WeatherForecast() {
   const { settings } = useSensors();
 
   return (
-    <div className="space-y-6 pb-8">
-      <div>
-        <h2 className="text-2xl font-bold text-primary">Weather Forecast</h2>
-        <p className="text-sm text-muted-foreground">7-day outlook for your farm</p>
+    <div className="min-h-screen w-full flex flex-col pt-6 pb-[100px] px-4 gap-6 bg-background">
+      
+      <header className="px-2">
+        <h1 className="text-3xl font-bold tracking-tight text-foreground">
+          Atmosphere
+        </h1>
+        <div className="flex items-center gap-1.5 text-muted-foreground mt-1">
+          <MapPin className="w-3.5 h-3.5" />
+          <span className="text-xs font-semibold uppercase tracking-wider">{settings.location}</span>
+        </div>
+      </header>
+
+      {/* Current State - Hero Widget */}
+      <div className="glass rounded-[2rem] p-6 flex flex-col relative overflow-hidden bg-surface border border-white/5 shadow-2xl">
+         <div className="absolute top-0 right-0 w-64 h-64 bg-accent/10 rounded-full blur-[80px] -mr-20 -mt-20 pointer-events-none" />
+         
+         <div className="flex justify-between items-start z-10">
+            <div className="space-y-1">
+               <span className="text-xs font-bold uppercase tracking-wider text-accent">Clear Sky</span>
+               <div className="flex items-baseline tracking-tighter">
+                 <h2 className="text-7xl font-bold text-foreground">28</h2>
+                 <span className="text-4xl font-bold text-muted-foreground">°C</span>
+               </div>
+            </div>
+            <Sun className="w-16 h-16 text-accent drop-shadow-lg" />
+         </div>
+         
+         <div className="flex gap-4 mt-8 pt-6 border-t border-white/5 z-10">
+            <div className="flex-1 glass bg-background/50 rounded-2xl p-4 flex flex-col items-center justify-center gap-1 border border-white/5">
+               <Droplets className="w-5 h-5 text-blue mb-1" />
+               <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Humidity</p>
+               <p className="font-bold text-lg text-foreground">55%</p>
+            </div>
+            <div className="flex-1 glass bg-background/50 rounded-2xl p-4 flex flex-col items-center justify-center gap-1 border border-white/5">
+               <Wind className="w-5 h-5 text-muted-foreground mb-1" />
+               <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Wind</p>
+               <p className="font-bold text-lg text-foreground">12 km/h</p>
+            </div>
+         </div>
       </div>
 
-      <Card className="bg-primary text-white border-none shadow-xl relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2" />
-        <CardContent className="p-6 space-y-6 relative z-10">
-          <div className="flex items-center justify-between">
-            <div className="space-y-1">
-              <p className="text-sm font-bold opacity-80 uppercase tracking-widest">Current Weather</p>
-              <h3 className="text-4xl font-bold">28°C</h3>
-              <p className="text-xl font-medium">Sunny</p>
-            </div>
-            <div className="text-6xl drop-shadow-lg">☀️</div>
-          </div>
-          
-          <div className="grid grid-cols-3 gap-4 pt-4 border-t border-white/20">
-            <div className="text-center space-y-1">
-              <CloudRain className="w-5 h-5 mx-auto opacity-70" />
-              <p className="text-xs font-bold">10%</p>
-              <p className="text-[10px] opacity-60">Rain</p>
-            </div>
-            <div className="text-center space-y-1">
-              <Droplets className="w-5 h-5 mx-auto opacity-70" />
-              <p className="text-xs font-bold">55%</p>
-              <p className="text-[10px] opacity-60">Humidity</p>
-            </div>
-            <div className="text-center space-y-1">
-              <Wind className="w-5 h-5 mx-auto opacity-70" />
-              <p className="text-xs font-bold">12 km/h</p>
-              <p className="text-[10px] opacity-60">Wind</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      <section className="space-y-3">
-        {forecast.slice(1).map((item, i) => (
-          <Card key={i} className="border-none shadow-sm">
-            <CardContent className="p-4 flex items-center justify-between">
-              <div className="flex items-center gap-4 w-32">
-                <span className="text-2xl">{item.icon}</span>
-                <span className="text-xs font-bold">{item.day}</span>
-              </div>
-              <div className="flex-1 flex justify-center">
-                <span className="text-sm font-bold">{item.temp}°C</span>
-              </div>
-              <div className="w-20 text-right">
-                <span className="text-[10px] font-bold text-blue-500 uppercase">Rain: {item.rain}</span>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </section>
-
-      <Card className="border-none shadow-sm bg-accent/10 border-accent/20">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-bold text-accent-foreground flex items-center gap-2">
-            🌱 Best Days for Farming
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          {forecast.filter(f => f.cond.includes('Ideal') || f.cond === 'Sunny').slice(0, 3).map((f, i) => (
-            <div key={i} className="flex items-center justify-between text-xs py-1 border-b border-accent/10 last:border-0">
-              <span className="font-medium">{f.day} - {f.icon} {f.temp}°C</span>
-              <span className="text-primary font-bold">✓ Ideal</span>
-            </div>
-          ))}
-          <p className="text-[10px] text-muted-foreground pt-2">Perfect for planting, irrigation, and harvesting activities</p>
-        </CardContent>
-      </Card>
-
-      <div className="bg-primary/5 p-4 rounded-xl border border-primary/10">
-        <p className="text-sm font-medium flex items-start gap-2">
-          <span>💡</span>
-          <span>Tip: Plan your irrigation around rainfall. The forecast shows rain on 2 days this week.</span>
+      {/* Agricultural Context */}
+      <div className="glass p-5 rounded-[2rem] space-y-3 relative overflow-hidden border-accent/20 bg-accent/5">
+        <div className="flex items-center gap-2 mb-1">
+          <Sparkles className="w-4 h-4 text-accent" />
+          <span className="text-xs font-bold uppercase tracking-wider text-accent">Optimal Window</span>
+        </div>
+        <p className="text-sm font-medium text-foreground/90 leading-relaxed pr-2">
+          Consistent solar exposure predicted for the next 72 hours. An ideal phase for precise irrigation management and crop inspection.
         </p>
       </div>
 
-      <p className="text-center text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
-        Weather for {settings.location}
-      </p>
+      {/* Forecast List */}
+      <section className="space-y-3">
+         <div className="px-2 flex items-center justify-between">
+            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">7-Day Horizon</p>
+         </div>
+         
+         <div className="glass rounded-[2rem] overflow-hidden divide-y divide-white/5">
+           {forecast.map((item, i) => (
+              <div key={i} className="flex items-center justify-between py-4 px-5 hover:bg-white/[0.02] transition-colors">
+                 <div className="flex flex-col w-24">
+                    <span className="text-base font-bold text-foreground/90">
+                      {item.day}
+                    </span>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                      {item.date}
+                    </span>
+                 </div>
+                 
+                 <div className="flex items-center justify-center gap-2">
+                    <item.icon className="w-5 h-5 text-foreground/80" />
+                    <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground w-16 text-center">{item.cond}</span>
+                 </div>
+                 
+                 <div className="w-12 text-right">
+                    <span className="text-xl font-bold text-foreground">{item.temp}°</span>
+                 </div>
+              </div>
+           ))}
+         </div>
+      </section>
+
     </div>
   );
 }

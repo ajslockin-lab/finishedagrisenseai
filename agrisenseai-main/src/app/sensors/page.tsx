@@ -1,116 +1,111 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
-
-const data = [
-  { date: '1/25', moisture: 62, temp: 22, nutrients: 45 },
-  { date: '1/26', moisture: 68, temp: 24, nutrients: 50 },
-  { date: '1/27', moisture: 72, temp: 23, nutrients: 65 },
-  { date: '1/28', moisture: 65, temp: 21, nutrients: 60 },
-  { date: '1/29', moisture: 70, temp: 25, nutrients: 70 },
-  { date: '1/30', moisture: 69, temp: 24, nutrients: 55 },
-  { date: '1/31', moisture: 67, temp: 23, nutrients: 58 },
-];
+import { useSensors } from '@/context/SensorContext';
+import { Activity, Droplets, ThermometerSun, FlaskConical, Leaf } from 'lucide-react';
 
 export default function SensorAnalytics() {
+  const { sensors } = useSensors();
+
   return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold text-primary">Sensor Analytics</h2>
-        <p className="text-sm text-muted-foreground">7-day historical trends</p>
-      </div>
+    <div className="min-h-screen w-full flex flex-col pt-6 pb-24 px-4 gap-6">
+      
+      <header className="px-2">
+        <h1 className="text-3xl font-bold tracking-tight text-foreground">
+          Telemetry
+        </h1>
+        <div className="flex items-center gap-1.5 text-muted-foreground mt-1">
+          <Activity className="w-3.5 h-3.5" />
+          <span className="text-xs font-semibold uppercase tracking-wider">Live Network</span>
+        </div>
+      </header>
 
-      <Card className="border-none shadow-sm overflow-hidden">
-        <CardHeader className="pb-0">
-          <CardTitle className="text-sm font-bold text-blue-600">Soil Moisture (%)</CardTitle>
-        </CardHeader>
-        <CardContent className="p-2 h-[200px]">
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={data}>
-              <defs>
-                <linearGradient id="colorMoisture" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.8}/>
-                  <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} />
-              <XAxis dataKey="date" fontSize={10} axisLine={false} tickLine={false} />
-              <YAxis fontSize={10} axisLine={false} tickLine={false} domain={[0, 100]} />
-              <Tooltip />
-              <Area type="monotone" dataKey="moisture" stroke="#3b82f6" fillOpacity={1} fill="url(#colorMoisture)" strokeWidth={2} />
-            </AreaChart>
-          </ResponsiveContainer>
-        </CardContent>
-      </Card>
-
-      <Card className="border-none shadow-sm overflow-hidden">
-        <CardHeader className="pb-0">
-          <CardTitle className="text-sm font-bold text-orange-600">Soil Temperature (°C)</CardTitle>
-        </CardHeader>
-        <CardContent className="p-2 h-[200px]">
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={data}>
-              <defs>
-                <linearGradient id="colorTemp" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#f97316" stopOpacity={0.8}/>
-                  <stop offset="95%" stopColor="#f97316" stopOpacity={0}/>
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} />
-              <XAxis dataKey="date" fontSize={10} axisLine={false} tickLine={false} />
-              <YAxis fontSize={10} axisLine={false} tickLine={false} domain={[10, 40]} />
-              <Tooltip />
-              <Area type="monotone" dataKey="temp" stroke="#f97316" fillOpacity={1} fill="url(#colorTemp)" strokeWidth={2} />
-            </AreaChart>
-          </ResponsiveContainer>
-        </CardContent>
-      </Card>
-
-      <Card className="border-none shadow-sm overflow-hidden">
-        <CardHeader className="pb-0">
-          <CardTitle className="text-sm font-bold text-green-600">Nutrient Levels (Units)</CardTitle>
-        </CardHeader>
-        <CardContent className="p-2 h-[200px]">
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={data}>
-              <defs>
-                <linearGradient id="colorNutrients" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#10b981" stopOpacity={0.8}/>
-                  <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} />
-              <XAxis dataKey="date" fontSize={10} axisLine={false} tickLine={false} />
-              <YAxis fontSize={10} axisLine={false} tickLine={false} domain={[30, 80]} />
-              <Tooltip />
-              <Area type="monotone" dataKey="nutrients" stroke="#10b981" fillOpacity={1} fill="url(#colorNutrients)" strokeWidth={2} />
-            </AreaChart>
-          </ResponsiveContainer>
-        </CardContent>
-      </Card>
-
-      <div className="grid grid-cols-2 gap-4">
-        <Card className="border-none shadow-sm">
-          <CardContent className="p-4">
-            <p className="text-[10px] uppercase font-bold text-muted-foreground">Avg Moisture</p>
-            <p className="text-xl font-bold">68.5%</p>
-          </CardContent>
-        </Card>
-        <Card className="border-none shadow-sm">
-          <CardContent className="p-4">
-            <p className="text-[10px] uppercase font-bold text-muted-foreground">Highest Temp</p>
-            <p className="text-xl font-bold">27.8°C</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="bg-primary/5 p-4 rounded-xl border border-primary/10">
-        <p className="text-sm font-medium flex items-start gap-2">
-          <span>💡</span>
-          <span>Tip: Monitor these trends daily. Sudden changes may indicate irrigation issues or weather impacts.</span>
+      {/* Global Health Status */}
+      <div className="glass p-5 rounded-[2rem] flex flex-col gap-3 relative overflow-hidden">
+        <div className="flex items-center justify-between">
+          <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">System Status</span>
+          <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-accent/20 text-accent">
+            OPTIMAL
+          </span>
+        </div>
+        <p className="text-base font-medium text-foreground/90 leading-relaxed pr-4">
+          All sensor nodes are responsive. Soil moisture in the East Block is trending slightly downward.
         </p>
       </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        {/* Moisture */}
+        <div className="glass p-5 rounded-[2rem] flex flex-col justify-between h-[180px]">
+          <div className="flex justify-between items-start">
+            <div className="w-8 h-8 rounded-full bg-blue/20 flex items-center justify-center">
+              <Droplets className="w-4 h-4 text-blue" />
+            </div>
+          </div>
+          <div className="space-y-1">
+            <p className="text-xs font-bold text-muted-foreground">Moisture</p>
+            <div className="flex items-baseline gap-1">
+              <span className="text-5xl font-bold tracking-tighter text-white">{sensors.soilMoisture.toFixed(0)}</span>
+              <span className="text-xl font-bold text-muted-foreground">%</span>
+            </div>
+            {/* Tracking bar */}
+            <div className="w-full h-1.5 bg-black/40 rounded-full overflow-hidden mt-3">
+              <div className="h-full bg-blue rounded-full" style={{ width: `${sensors.soilMoisture}%` }} />
+            </div>
+          </div>
+        </div>
+
+        {/* Temperature */}
+        <div className="glass p-5 rounded-[2rem] flex flex-col justify-between h-[180px]">
+          <div className="flex justify-between items-start">
+            <div className="w-8 h-8 rounded-full bg-gold/20 flex items-center justify-center">
+              <ThermometerSun className="w-4 h-4 text-gold" />
+            </div>
+          </div>
+          <div className="space-y-1">
+            <p className="text-xs font-bold text-muted-foreground">Soil Temp</p>
+            <div className="flex items-baseline gap-1">
+              <span className="text-5xl font-bold tracking-tighter text-white">{sensors.soilTemperature.toFixed(0)}</span>
+              <span className="text-xl font-bold text-muted-foreground">°C</span>
+            </div>
+            {/* Tracking bar */}
+            <div className="w-full h-1.5 bg-black/40 rounded-full overflow-hidden mt-3">
+              <div className="h-full bg-gold rounded-full" style={{ width: `${(sensors.soilTemperature / 50) * 100}%` }} />
+            </div>
+          </div>
+        </div>
+
+        {/* pH */}
+        <div className="glass p-5 rounded-[2rem] flex flex-col justify-between h-[180px]">
+          <div className="flex justify-between items-start">
+            <div className="w-8 h-8 rounded-full bg-accent/20 flex items-center justify-center">
+              <FlaskConical className="w-4 h-4 text-accent" />
+            </div>
+          </div>
+          <div className="space-y-1">
+            <p className="text-xs font-bold text-muted-foreground">pH Level</p>
+            <div className="flex items-baseline gap-1">
+              <span className="text-4xl font-bold tracking-tighter text-white">{sensors.soilPh.toFixed(1)}</span>
+            </div>
+            <p className="text-[10px] font-bold text-accent uppercase mt-2">Target: 6.5</p>
+          </div>
+        </div>
+
+        {/* Nutrients */}
+        <div className="glass p-5 rounded-[2rem] flex flex-col justify-between h-[180px]">
+          <div className="flex justify-between items-start">
+            <div className="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center">
+              <Leaf className="w-4 h-4 text-green-500" />
+            </div>
+          </div>
+          <div className="space-y-1">
+            <p className="text-xs font-bold text-muted-foreground">Nutrients</p>
+            <div className="flex items-baseline gap-1">
+              <span className="text-3xl font-bold tracking-tight text-white capitalize">{sensors.nutrientLevel}</span>
+            </div>
+            <p className="text-[10px] font-bold text-green-500 uppercase mt-2">N-P-K Balanced</p>
+          </div>
+        </div>
+      </div>
+
     </div>
   );
 }
