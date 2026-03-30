@@ -1,61 +1,46 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,600;1,700&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syncopate:wght@400;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 /* ═══════════════════════════════════════════
-   AgriSenseAI — Aperture Spatial Design System
-   Ethereal, Apple-esque, Fluid, Spatial
+   AgriSenseAI — Cyber-Botany Architecture
+   Maximalist Neon Data Art & Organic Serifs
    ═══════════════════════════════════════════ */
 
 @layer base {
   :root {
-    /* Pure deep background to allow frost elements to float */
-    --background: 140 10% 2%;          /* #050605 essentially OLED black with tiny green lean */
-    --foreground: 0 0% 98%;            /* Pure white with subpixel anti-aliasing */
+    --background: 144 62% 3%;        /* #030D06 Abyssal green background */
+    --foreground: 51 32% 94%;        /* #F6F4EB Bone ash text */
 
-    --card: 140 10% 4%;                
-    --card-foreground: 0 0% 98%;
+    --card: 135 43% 7%;              /* #0A170C Elevated panels */
+    --card-foreground: 51 32% 94%;
 
-    --popover: 140 10% 4%;
-    --popover-foreground: 0 0% 98%;
+    --popover: 135 43% 7%;
+    --popover-foreground: 51 32% 94%;
 
-    --primary: 40 70% 66%;             /* #E5C16C Gold */
-    --primary-foreground: 140 10% 2%;
+    --primary: 111 100% 54%;         /* #39FF14 Shockingly bright neon green */
+    --primary-foreground: 144 62% 3%;
 
-    --secondary: 100 20% 56%;          /* #88A37A Sage */
-    --secondary-foreground: 140 10% 2%;
+    --secondary: 135 43% 7%;
+    --secondary-foreground: 111 100% 54%;
 
-    --muted: 140 10% 8%;               /* Very dark subtle highlight */
-    --muted-foreground: 140 5% 55%;    /* Soft, highly legible grey */
+    --muted: 111 81% 19%;            /* #165709 Deep glow overlay */
+    --muted-foreground: 111 23% 69%; /* #A3BFA0 Muted neon */
 
-    --accent: 100 20% 56%;
-    --accent-foreground: 140 10% 2%;
+    --accent: 111 100% 54%;          
+    --accent-foreground: 144 62% 3%;
 
-    --destructive: 20 60% 57%;         /* #D27B50 Rust */
-    --destructive-foreground: 140 10% 2%;
+    --destructive: 12 100% 50%;      /* #FF3300 Solar flare red */
+    --destructive-foreground: 144 62% 3%;
 
-    --border: 140 10% 12%;             /* Subtle dividing lines */
-    --input: 140 10% 10%;
-    --ring: 40 70% 66%;
+    --border: 111 81% 19%;           /* Neon hairline borders */
+    --input: 135 43% 7%;
+    --ring: 111 100% 54%;
 
-    --radius: 1.25rem;                 /* Beautifully rounded, modern Apple corners */
-
-    /* Chart palette */
-    --chart-1: 40 70% 66%;
-    --chart-2: 100 20% 56%;
-    --chart-3: 20 60% 57%;
-    --chart-4: 180 30% 45%;
-    --chart-5: 40 30% 75%;
-
-    /* Sidebar */
-    --sidebar-background: 140 10% 3%;
-    --sidebar-foreground: 0 0% 98%;
-    --sidebar-primary: 40 70% 66%;
-    --sidebar-primary-foreground: 140 10% 2%;
-    --sidebar-accent: 140 10% 8%;
-    --sidebar-accent-foreground: 0 0% 98%;
-    --sidebar-border: 140 10% 10%;
-    --sidebar-ring: 40 70% 66%;
+    /* Utterly sharp UI mapping */
+    --radius: 0px; 
   }
 }
 
@@ -67,10 +52,8 @@
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
-    -webkit-tap-highlight-color: transparent;
-    /* Soften text rendering for premium feel */
     -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden; /* Important due to bleed typography */
   }
 
   html {
@@ -79,71 +62,118 @@
 }
 
 /* ═══════════════════════════════════════════
-   Spatial Frost & Glass
-   ═══════════════════════════════════════════ */
-.glass-panel {
-  @apply backdrop-blur-[40px] bg-white/[0.02] shadow-frost;
-  /* Add an extremely subtle noise ONLY to the glass to prevent banding, 
-     not a harsh grain over the whole screen */
-  background-image: 
-    linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.005) 100%),
-    url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.5' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.02'/%3E%3C/svg%3E");
-}
-
-/* ═══════════════════════════════════════════
-   Typography Utilities
+   Cyber-Botanical Typography
    ═══════════════════════════════════════════ */
 .font-display {
-  font-family: var(--font-dm-sans), 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-  letter-spacing: -0.02em;
+  font-family: 'Syncopate', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: -0.05em; /* Extremely brutal spacing for huge display */
 }
-.font-body {
-  font-family: var(--font-dm-sans), 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-}
+
 .font-mono-data {
-  font-family: var(--font-ibm-plex-mono), 'IBM Plex Mono', monospace;
-  font-variant-numeric: tabular-nums lining-nums;
+  font-family: 'Space Mono', monospace;
+  text-transform: uppercase;
+  letter-spacing: -0.01em; 
+}
+
+.font-organic {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  @apply text-muted-foreground; /* Use as background/accent organic element */
 }
 
 /* ═══════════════════════════════════════════
-   Component Specifics
+   Atmospheric Mesh & Noise
    ═══════════════════════════════════════════ */
-.health-gradient-excellent {
-  background: radial-gradient(circle at top left, rgba(136,163,122,0.15), transparent 70%);
-}
-.health-gradient-warning {
-  background: radial-gradient(circle at top left, rgba(210,123,80,0.15), transparent 70%);
+.atmosphere-mesh {
+  position: fixed;
+  inset: -20vh -20vw;
+  width: 140vw;
+  height: 140vh;
+  z-index: -2;
+  background: 
+    radial-gradient(circle at 70% 20%, rgba(57, 255, 20, 0.08) 0%, transparent 40%),
+    radial-gradient(circle at 30% 80%, rgba(57, 255, 20, 0.05) 0%, transparent 50%),
+    radial-gradient(circle at 10% 40%, rgba(255, 51, 0, 0.03) 0%, transparent 40%);
+  @apply animate-mesh-drift mix-blend-screen;
+  pointer-events: none;
 }
 
-.text-glow-subtle {
-  text-shadow: 0 0 24px rgba(255,255,255,0.2);
+.atmosphere-noise {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  opacity: 0.15;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  pointer-events: none;
+  mix-blend-mode: overlay;
 }
 
-.active-scale-smooth {
-  @apply transition-transform active:scale-[0.97] duration-300 ease-[cubic-bezier(0.2,0.8,0.2,1)];
+/* ═══════════════════════════════════════════
+   Sentient Hover States (Cypher Reveal Effect)
+   ═══════════════════════════════════════════ */
+/* A trick: use the pseudo-element to hold scrambled text and reveal true text on hover.
+   Implementing a clean data-mask via tailwind utility classes in React instead for ease,
+   but we'll keep the brutal neon focus state here. */
+
+.cyber-panel {
+  @apply bg-card/60 backdrop-blur-xl border border-muted shadow-neon text-bone relative overflow-hidden transition-all duration-300;
+}
+.cyber-panel:hover {
+  @apply bg-card/80 border-primary shadow-neon-hover -translate-y-[2px] -translate-x-[2px];
 }
 
-/* Fluid scrollbar */
+/* CRT Scanline moving over panel */
+.cyber-panel::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, transparent, rgba(57, 255, 20, 0.05) 50%, transparent);
+  height: 20%;
+  width: 100%;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.cyber-panel:hover::after {
+  opacity: 1;
+  @apply animate-scanline;
+}
+
+/* ═══════════════════════════════════════════
+   Massive Unforgettable Text Overrides
+   ═══════════════════════════════════════════ */
+.sentient-number {
+  /* Bleeding huge absolute background number */
+  @apply fixed font-display font-bold mix-blend-overlay z-0 text-[35vw] md:text-[25vw] leading-[0.6] tracking-tighter;
+  color: rgba(57, 255, 20, 0.05); /* very faint neon green */
+  pointer-events: none;
+  user-select: none;
+  /* Hardware accelerated distortion handled via Framer Motion */
+}
+
+/* ═══════════════════════════════════════════
+   Scrollbar & Small Utilities
+   ═══════════════════════════════════════════ */
 ::-webkit-scrollbar {
-  width: 6px;
+  width: 1px;
 }
 ::-webkit-scrollbar-track {
-  background: transparent;
+  background: var(--background);
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(255,255,255,0.1);
-  border-radius: 12px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(255,255,255,0.2);
+  background: rgba(57, 255, 20, 0.7);
 }
 
-/* Recharts tooltip override - frosted */
 .recharts-tooltip-wrapper .recharts-default-tooltip {
-  background: rgba(10, 10, 10, 0.6) !important;
-  backdrop-filter: blur(20px) !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-  border-radius: 1rem !important;
-  color: hsl(var(--foreground)) !important;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.4) !important;
+  background: hsl(var(--card)) !important;
+  color: var(--primary) !important;
+  border: 1px solid var(--primary) !important;
+  border-radius: 0 !important;
+  font-family: 'Space Mono', monospace !important;
+  text-transform: uppercase;
+  font-weight: 700;
+  box-shadow: 10px 10px 0px 0px rgba(57, 255, 20, 0.1) !important;
 }

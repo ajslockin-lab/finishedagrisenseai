@@ -1,109 +1,102 @@
 "use client";
 
-import { useState, useEffect } from 'react';
-import { Droplets, Thermometer, Beaker, Leaf, CheckCircle2, Circle, Star, Sparkles, ShieldCheck, Zap, AlertCircle, TrendingUp, Timer, Plus, Trash2, Crown, ChevronRight, LayoutGrid, Plane, BookOpen, Clock } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import { useState, useEffect, useRef } from 'react';
+import { Droplets, Thermometer, Beaker, Leaf, CheckSquare, Square, Zap, Target, Plane, Orbit, AlertTriangle } from 'lucide-react';
 import { useSensors } from '@/context/SensorContext';
 import Link from 'next/link';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, useScroll, useTransform, useMotionValue, useSpring } from 'framer-motion';
 
+// --- Types & Data ---
 interface Task {
   id: string;
   title: string;
   completed: boolean;
-  icon: string;
+  priority: 'PRIME' | 'SUB';
   date: string;
 }
 
 const DEFAULT_TASKS: Task[] = [
-  { id: '1', title: 'Morning Irrigation Check', completed: false, icon: '💧', date: format(new Date(), 'yyyy-MM-dd') },
-  { id: '2', title: 'Analyze Canopy Health', completed: false, icon: '🔎', date: format(new Date(), 'yyyy-MM-dd') },
-  { id: '3', title: 'Calibrate Ph Sensors', completed: false, icon: '🧪', date: format(new Date(), 'yyyy-MM-dd') },
+  { id: '1', title: 'INITIATE TRIBUTARY HYDRATION SEQUENCE', completed: false, priority: 'PRIME', date: format(new Date(), 'yyyy-MM-dd') },
+  { id: '2', title: 'CALIBRATE MYCELIAL SENSOR NODE 4', completed: false, priority: 'SUB', date: format(new Date(), 'yyyy-MM-dd') },
+  { id: '3', title: 'DEPLOY UAV: SPECTRAL CANOPY ANALYSIS', completed: false, priority: 'PRIME', date: format(new Date(), 'yyyy-MM-dd') },
 ];
 
-const TASK_ICONS = ['💧', '🌱', '🔎', '🚜', '🌾', '🧪', '📦', '🌿', '🛒', '⚡'];
+const PRIORITIES = ['PRIME', 'SUB'] as const;
 
-// Smoother, more floating spatial animations
-const spatialStagger = {
+// --- Animations ---
+const systemBootStagger = {
   hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.1, delayChildren: 0.1 }
-  }
+  visible: { transition: { staggerChildren: 0.15, delayChildren: 0.2 } }
 } as const;
 
-const spatialItem = {
-  hidden: { opacity: 0, y: 30, scale: 0.98 },
-  visible: { 
-    opacity: 1, 
-    y: 0, 
-    scale: 1, 
-    transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] } 
-  }
+const cyberPanelReveal = {
+  hidden: { opacity: 0, y: 20, filter: 'blur(5px)' },
+  visible: { opacity: 1, y: 0, filter: 'blur(0px)', transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] } }
 } as const;
+
+// --- Sub-Components ---
+function ScrambleText({ text, active }: { text: string, active: boolean }) {
+  const [displayText, setDisplayText] = useState(text);
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789§±Ð£¢∞';
+
+  useEffect(() => {
+    if (!active) {
+      setDisplayText(text);
+      return;
+    }
+    let iteration = 0;
+    let interval: NodeJS.Timeout;
+    
+    interval = setInterval(() => {
+      setDisplayText(text.split('').map((letter, index) => {
+        if(index < iteration) return text[index];
+        return chars[Math.floor(Math.random() * chars.length)];
+      }).join(''));
+
+      if (iteration >= text.length) clearInterval(interval);
+      iteration += 1/3; 
+    }, 30);
+
+    return () => clearInterval(interval);
+  }, [text, active]);
+
+  return <span className="font-mono-data tracking-tighter w-full block truncate">{displayText}</span>;
+}
 
 export default function HomeDashboard() {
   const { sensors, lastUpdated, settings, t } = useSensors();
   const [mounted, setMounted] = useState(false);
   const [irrigationOn, setIrrigationOn] = useState(false);
   const [tasks, setTasks] = useState<Task[]>(DEFAULT_TASKS);
-  const [addingTask, setAddingTask] = useState(false);
-  const [newTaskTitle, setNewTaskTitle] = useState('');
+  
+  // Sentient tracking
+  const containerRef = useRef<HTMLDivElement>(null);
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+  const smoothX = useSpring(mouseX, { damping: 50, stiffness: 400 });
+  const smoothY = useSpring(mouseY, { damping: 50, stiffness: 400 });
+
+  // Scroll bindings for the topographic drift
+  const { scrollYProgress } = useScroll({ target: containerRef });
+  const yDrift = useTransform(scrollYProgress, [0, 1], ['0%', '-30%']);
+  const rotateDrift = useTransform(scrollYProgress, [0, 1], ['0deg', '5deg']);
 
   useEffect(() => {
     setMounted(true);
+    const saved = localStorage.getItem('agrisense_tasks_cyber');
     const today = format(new Date(), 'yyyy-MM-dd');
-    const saved = localStorage.getItem('agrisense_tasks');
     if (saved) {
       const parsed: Task[] = JSON.parse(saved);
-      const todayTasks = parsed.map(t => ({
-        ...t,
-        completed: t.date === today ? t.completed : false,
-        date: today,
-      }));
-      setTasks(todayTasks);
+      setTasks(parsed.map(t => ({...t, completed: t.date === today ? t.completed : false, date: today})));
     }
-    const valve = localStorage.getItem('agrisense_valve');
-    if (valve) setIrrigationOn(valve === 'true');
   }, []);
 
-  const persistTasks = (updated: Task[]) => {
-    setTasks(updated);
-    localStorage.setItem('agrisense_tasks', JSON.stringify(updated));
-  };
-
-  const toggleTask = (id: string) => {
-    const today = format(new Date(), 'yyyy-MM-dd');
-    persistTasks(tasks.map(t => t.id === id ? { ...t, completed: !t.completed, date: today } : t));
-  };
-
-  const deleteTask = (id: string) => {
-    persistTasks(tasks.filter(t => t.id !== id));
-  };
-
-  const addTask = () => {
-    if (!newTaskTitle.trim()) return;
-    const icon = TASK_ICONS[Math.floor(Math.random() * TASK_ICONS.length)];
-    const newTask: Task = {
-      id: Date.now().toString(),
-      title: newTaskTitle.trim(),
-      completed: false,
-      icon,
-      date: format(new Date(), 'yyyy-MM-dd'),
-    };
-    persistTasks([...tasks, newTask]);
-    setNewTaskTitle('');
-    setAddingTask(false);
-  };
-
-  const toggleValve = () => {
-    const next = !irrigationOn;
-    setIrrigationOn(next);
-    localStorage.setItem('agrisense_valve', String(next));
+  const handleMouseMove = (e: React.MouseEvent) => {
+    const { clientX, clientY } = e;
+    mouseX.set(clientX - window.innerWidth / 2);
+    mouseY.set(clientY - window.innerHeight / 2);
   };
 
   const calculateHealthScore = () => {
@@ -116,302 +109,205 @@ export default function HomeDashboard() {
   };
 
   const healthScore = calculateHealthScore();
-  const completedCount = tasks.filter(t => t.completed).length;
-  const isOptimal = healthScore > 80;
+  const isHealthy = healthScore >= 80;
 
   if (!mounted) return null;
 
-  const sensorCards = [
-    { key: 'dashboard_moisture', val: sensors.soilMoisture, icon: Droplets, unit: '%', optimal: '70–80%', color: 'from-blue-400 to-cyan-300', text: 'text-cyan-300' },
-    { key: 'dashboard_temp', val: sensors.soilTemperature, icon: Thermometer, unit: '°C', optimal: '22–26°C', color: 'from-amber-400 to-orange-400', text: 'text-amber-400' },
-    { key: 'dashboard_ph', val: sensors.soilPh, icon: Beaker, unit: '', optimal: '6.0–7.0', color: 'from-purple-400 to-pink-400', text: 'text-purple-400' },
-    { key: 'dashboard_nutrients', val: sensors.nutrientLevel, icon: Leaf, unit: '', optimal: 'High', color: 'from-sage-light to-emerald-400', text: 'text-sage-light' },
-  ];
-
   return (
-    <div className="relative min-h-screen">
-      {/* Absolute ambient background */}
-      <div className="fixed inset-0 pointer-events-none bg-gradient-ambient animate-ambient-shift opacity-70" />
+    <div 
+      className="relative min-h-screen font-body text-bone selection:bg-bio selection:text-abyss overflow-hidden" 
+      ref={containerRef}
+      onMouseMove={handleMouseMove}
+    >
+      {/* ═══ Atmosphere ═══ */}
+      <div className="atmosphere-noise" />
+      <div className="atmosphere-mesh pointer-events-none" />
 
+      {/* ═══ The Sentient Number ═══ */}
+      <motion.div 
+         className="sentient-number left-[5%] top-[10%] opacity-20"
+         style={{
+            x: useTransform(smoothX, [-1000, 1000], [-50, 50]),
+            y: useTransform(smoothY, [-1000, 1000], [-50, 50]),
+            skewX: useTransform(smoothX, [-1000, 1000], [-10, 10]),
+            color: isHealthy ? 'rgba(57, 255, 20, 0.15)' : 'rgba(255, 51, 0, 0.15)'
+         }}
+      >
+         {healthScore}
+      </motion.div>
+
+      {/* ═══ Main Architecture ═══ */}
       <motion.div
-        className="relative z-10 space-y-8 pb-12"
-        variants={spatialStagger}
+        className="relative z-10 w-full min-h-screen p-6 md:p-12 lg:p-20 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 pt-24"
+        variants={systemBootStagger}
         initial="hidden"
         animate="visible"
       >
-        {/* ═══ Header ═══ */}
-        <motion.div variants={spatialItem} className="flex justify-between items-center px-2 pt-2">
-          <div>
-            <h1 className="font-display text-2xl font-semibold tracking-tight">AgriSense</h1>
-            <p className="text-sm text-white/50">{settings.cropType || 'Paddy Field'} Alpha</p>
-          </div>
-          <div className="flex items-center gap-2 bg-white/5 backdrop-blur-md border border-white/10 shadow-spatial-sm px-3 py-1.5 rounded-full">
-            <span className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse-subtle" />
-            <span className="text-[10px] font-semibold text-white/70 uppercase tracking-widest">{t('dashboard_live')}</span>
-          </div>
-        </motion.div>
 
-        {/* ═══ Live Alert Banner ═══ */}
-        <AnimatePresence>
-          {sensors.soilMoisture < 65 && (
-            <motion.div 
-              variants={spatialItem} 
-              initial={{ opacity: 0, height: 0, scale: 0.95 }}
-              animate={{ opacity: 1, height: 'auto', scale: 1 }}
-              exit={{ opacity: 0, height: 0, scale: 0.95 }}
-              className="bg-destructive/10 backdrop-blur-md border border-destructive/20 shadow-spatial-sm px-5 py-4 rounded-2xl flex items-center gap-4"
-            >
-              <div className="w-10 h-10 rounded-full bg-destructive/20 flex items-center justify-center shrink-0 shadow-inner">
-                <AlertCircle className="w-5 h-5 text-destructive" />
+        {/* ─── Left Asymmetric Column ─── */}
+        <motion.header className="lg:col-span-5 flex flex-col justify-between items-start" variants={cyberPanelReveal}>
+           
+           <div>
+             <div className="flex items-center gap-3 mb-4">
+                <SpinnerIcon className="w-6 h-6 text-bio animate-[spin_4s_linear_infinite]" />
+                <span className="font-mono-data text-xs text-bio/70 uppercase tracking-widest border border-bio/30 px-2 py-0.5">NET.LINK ESTABLISHED // {format(lastUpdated, 'HH:mm:ss')}</span>
+             </div>
+             
+             <h1 className="font-display text-5xl md:text-7xl lg:text-8xl font-bold leading-[0.8] mb-6 drop-shadow-[0_0_15px_rgba(57,255,20,0.3)]">
+               AGRI<br/>SENSE
+               <span className="text-bio block mt-2 text-3xl md:text-5xl font-organic italic">OS / Biosphere</span>
+             </h1>
+
+             <p className="font-mono-data text-sm md:text-base text-bone/60 max-w-sm leading-relaxed mb-12 border-l-2 border-bio/50 pl-4">
+               {isHealthy ? 
+               "Biological telemetry reporting nominal ranges. Mycelial network stable. Hydration nodes maintaining optimal saturation." : 
+               "CRITICAL VARIANCE DETECTED. Ecosystem equilibrium disrupted. Manual intervention required to stabilize biological matrix."}
+             </p>
+           </div>
+
+           {/* Vertical Status Array */}
+           <div className="flex gap-4 w-full">
+              <div className={cn("flex-1 p-4 border flex flex-col items-start cyber-panel", isHealthy ? "border-bio" : "border-solar")}>
+                 <span className="font-mono-data text-[10px] text-bone/50 uppercase tracking-widest">ECO.INTEGRITY</span>
+                 <span className={cn("font-display text-4xl font-bold leading-none mt-2", isHealthy ? "text-bio" : "text-solar")}>{healthScore}%</span>
               </div>
-              <div>
-                <h4 className="text-sm font-semibold text-destructive">{t('settings_alerts')}</h4>
-                <p className="text-xs text-destructive/80 mt-0.5">
-                  {t('dashboard_moisture')} ({sensors.soilMoisture.toFixed(1)}%) — below optimal range. Turn on irrigation.
-                </p>
+              <div className="flex-[0.5] p-4 cyber-panel border border-muted flex flex-col justify-end items-end">
+                 <span className="font-mono-data text-[10px] text-bone/50 uppercase">SECTOR</span>
+                 <span className="font-display text-xl font-bold text-bone">0xA1</span>
               </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+           </div>
+        </motion.header>
 
-        {/* ═══ Hero Health Sphere ═══ */}
-        <motion.section variants={spatialItem} className="relative overflow-visible">
-          <div className={cn(
-            "glass-panel rounded-[2rem] p-8 md:p-10 relative overflow-hidden transition-colors duration-1000",
-            isOptimal ? "bg-white/[0.03]" : "bg-white/[0.01]"
-          )}>
-            {/* Soft inner glow */}
-            <div className={cn(
-               "absolute -top-32 -right-32 w-96 h-96 rounded-full blur-[80px] opacity-20 pointer-events-none transition-colors duration-1000",
-               isOptimal ? "bg-sage" : "bg-destructive"
-            )} />
+        {/* ─── Right Cascading Grid ─── */}
+        <motion.main 
+           className="lg:col-span-7 flex flex-col gap-6 w-full relative z-20"
+           style={{ y: yDrift, rotateX: rotateDrift }}
+        >
+            
+           {/* Telemetry Sensor Array (Overlapping / Broken Grid) */}
+           <div className="grid grid-cols-2 gap-4 auto-rows-min mt-10 lg:mt-0 relative">
+              <div className="absolute -left-6 top-1/2 w-0.5 h-3/4 bg-bio/20 hidden lg:block" />
+              <div className="absolute -left-12 top-10 w-4 h-0.5 bg-bio/20 hidden lg:block" />
+              <div className="absolute -left-12 bottom-10 w-4 h-0.5 bg-bio/20 hidden lg:block" />
 
-            <div className="flex flex-col md:flex-row md:items-center gap-8 md:gap-12 relative z-10">
+              {/* Moisture */}
+              <HoverRefCard>
+                 <div className="flex justify-between items-start mb-6">
+                    <Droplets className="w-5 h-5 text-bio drop-shadow-[0_0_8px_#39ff14]" />
+                    <span className="font-mono-data text-[9px] text-bone/40 border border-muted px-1">T.MSTR</span>
+                 </div>
+                 <div className="flex items-baseline gap-1">
+                    <span className="font-display text-4xl md:text-5xl font-bold">{sensors.soilMoisture.toFixed(1)}</span>
+                    <span className="font-mono-data text-xs text-bio">%</span>
+                 </div>
+              </HoverRefCard>
+
+              {/* Temperature */}
+              <HoverRefCard>
+                 <div className="flex justify-between items-start mb-6">
+                    <Thermometer className="w-5 h-5 text-solar drop-shadow-[0_0_8px_#ff3300]" />
+                    <span className="font-mono-data text-[9px] text-bone/40 border border-muted px-1">T.TEMP</span>
+                 </div>
+                 <div className="flex items-baseline gap-1">
+                    <span className="font-display text-4xl md:text-5xl font-bold">{sensors.soilTemperature.toFixed(1)}</span>
+                    <span className="font-mono-data text-xs text-solar">°C</span>
+                 </div>
+              </HoverRefCard>
+
+              {/* pH Level */}
+              <HoverRefCard>
+                 <div className="flex justify-between items-start mb-6">
+                    <Beaker className="w-5 h-5 text-bone/80" />
+                    <span className="font-mono-data text-[9px] text-bone/40 border border-muted px-1">T.ACID</span>
+                 </div>
+                 <div className="flex items-baseline gap-1">
+                    <span className="font-display text-4xl md:text-5xl font-bold">{sensors.soilPh.toFixed(1)}</span>
+                    <span className="font-organic text-lg text-bone/60 ml-1">pH</span>
+                 </div>
+              </HoverRefCard>
+
+              {/* Nutrients - Full Width */}
+              <HoverRefCard className="col-span-2 mt-4 ml-0 md:ml-12 border-bio/50 bg-bio/5">
+                 <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-full border border-bio flex items-center justify-center shrink-0">
+                       <Leaf className="w-5 h-5 text-bio drop-shadow-[0_0_5px_#39ff14]" />
+                    </div>
+                    <div>
+                       <span className="font-mono-data text-[10px] text-bio/70 mb-1 block">BIOLOGICAL_RESERVE</span>
+                       <span className="font-display text-2xl md:text-3xl font-bold text-bio">{'<<'} {sensors.nutrientLevel} {'>>'}</span>
+                    </div>
+                 </div>
+              </HoverRefCard>
+           </div>
+
+           {/* Hardware Overrides */}
+           <motion.div variants={cyberPanelReveal} className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8 pt-8 border-t border-muted/50 relative">
+              <div className="absolute -top-1 right-0 w-24 h-[1px] bg-bio/50 blur-[2px]" />
               
-              {/* Ethereal Gauge */}
-              <div className="flex-shrink-0 relative w-40 h-40 md:w-48 md:h-48 mx-auto md:mx-0">
-                <div className="absolute inset-0 animate-breathe-spatial">
-                  <svg className="w-full h-full -rotate-90 drop-shadow-xl" viewBox="0 0 100 100">
-                    <circle className="text-white/5" strokeWidth="3" stroke="currentColor" fill="transparent" r="46" cx="50" cy="50" />
-                    <motion.circle
-                      className={cn("transition-colors duration-1000", isOptimal ? "text-primary" : "text-amber-500")}
-                      strokeWidth="4"
-                      strokeDasharray={`${2 * Math.PI * 46}`}
-                      strokeDashoffset={2 * Math.PI * 46 * (1 - healthScore / 100)}
-                      strokeLinecap="round"
-                      stroke="currentColor"
-                      fill="transparent"
-                      r="46" cx="50" cy="50"
-                      initial={{ strokeDashoffset: 2 * Math.PI * 46 }}
-                      animate={{ strokeDashoffset: 2 * Math.PI * 46 * (1 - healthScore / 100) }}
-                      transition={{ duration: 2, ease: [0.16, 1, 0.3, 1] }}
-                    />
-                  </svg>
-                </div>
-                
-                {/* Center score */}
-                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                  <span className="font-display text-5xl font-light tracking-tighter text-white text-glow-subtle">{healthScore}</span>
-                  <span className="text-[10px] font-semibold text-white/40 uppercase tracking-[0.2em] mt-1">
-                    {t('dashboard_integrity')}
-                  </span>
-                </div>
-              </div>
-
-              {/* Info section */}
-              <div className="flex-1 space-y-6 text-center md:text-left">
-                <div>
-                  <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/5 rounded-full border border-white/10 mb-3 shadow-[0_2px_10px_rgba(0,0,0,0.2)]">
-                    <Star className="w-3 h-3 text-gold fill-gold" />
-                    <span className="text-[10px] font-semibold text-gold uppercase tracking-widest">Premium Analysis</span>
-                  </div>
-                  <h2 className="font-display text-2xl md:text-3xl font-medium tracking-tight text-white mb-2">
-                    {isOptimal ? t('dashboard_health_excellent') : t('dashboard_health_stable')}
-                  </h2>
-                  <p className="text-sm text-white/60 leading-relaxed font-body">
-                    The ecosystem is maintaining perfect equilibrium. Soil nutrients are absorbing perfectly, and light levels are optimal for the vegetative stage.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </motion.section>
-
-        {/* ═══ Crop Lifecycle ═══ */}
-        <motion.div variants={spatialItem}>
-          <div className="glass-panel rounded-2xl p-5 flex items-center gap-5">
-            <div className="w-12 h-12 bg-white/5 rounded-full flex items-center justify-center border border-white/10 shadow-inner">
-              <Clock className="w-5 h-5 text-white/50" />
-            </div>
-            <div className="flex-1">
-              <div className="flex justify-between items-baseline mb-3">
-                <span className="text-sm font-medium text-white/90">{t('dashboard_status_veg')}</span>
-                <span className="text-xs font-mono text-white/40 tracking-wider">Day 42 / 120</span>
-              </div>
-              <div className="h-1 bg-white/5 rounded-full overflow-hidden shadow-inner">
-                <motion.div
-                  className="h-full bg-gradient-to-r from-accent to-primary rounded-full"
-                  initial={{ width: 0 }}
-                  animate={{ width: '35%' }}
-                  transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
-                />
-              </div>
-            </div>
-          </div>
-        </motion.div>
-
-        {/* ═══ Sensor Grid — Spatial Glass ═══ */}
-        <motion.section variants={spatialItem} className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-5">
-          {sensorCards.map((sensor, idx) => (
-            <motion.div
-              key={idx}
-              variants={spatialItem}
-              whileHover={{ y: -4, scale: 1.02 }}
-              transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-            >
-              <div className="glass-panel rounded-[1.5rem] p-5 h-full relative group">
-                <div className={cn("absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity duration-500 rounded-[1.5rem] bg-gradient-to-br", sensor.color)} />
-                
-                <div className="flex justify-between items-start mb-4">
-                  <span className="text-[10px] font-semibold text-white/40 uppercase tracking-widest leading-tight w-2/3">
-                    {t(sensor.key as any)}
-                  </span>
-                  <sensor.icon className={cn("w-5 h-5", sensor.text, "opacity-70 group-hover:opacity-100 transition-opacity")} />
-                </div>
-                
-                <div className="flex items-baseline gap-1 mt-auto">
-                  <span className="font-display text-3xl font-light tracking-tight text-white">
-                    {typeof sensor.val === 'number' ? sensor.val.toFixed(1) : sensor.val}
-                  </span>
-                  <span className="text-sm font-medium text-white/40">{sensor.unit}</span>
-                </div>
-                <p className="text-[10px] text-white/30 mt-2 font-mono">{t('dashboard_range')}: {sensor.optimal}</p>
-              </div>
-            </motion.div>
-          ))}
-        </motion.section>
-
-        {/* ═══ Operational spatial list ═══ */}
-        <motion.section variants={spatialItem} className="space-y-5">
-          <div className="flex items-center justify-between px-2">
-            <h3 className="font-display text-xl font-medium tracking-tight text-white">{t('dashboard_ops_log')}</h3>
-            <div className="flex items-center gap-3">
-              <span className="text-[11px] font-semibold text-white/40 tracking-widest uppercase">
-                {completedCount}/{tasks.length} {t('dashboard_done')}
-              </span>
-              <button
-                onClick={() => setAddingTask(!addingTask)}
-                className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center border border-white/10 hover:bg-white/10 transition-colors shadow-spatial-sm"
+              <button 
+                onClick={() => setIrrigationOn(!irrigationOn)}
+                className={cn(
+                  "cyber-panel p-6 text-left group",
+                  irrigationOn ? "bg-bio/20 border-bio ring-[0.5px] ring-bio shadow-neon inset-glow" : ""
+                )}
               >
-                <Plus className="w-4 h-4 text-white/70" />
+                 <Zap className={cn("w-6 h-6 mb-4", irrigationOn ? "animate-pulse text-bone" : "text-bio/50")} />
+                 <h3 className="font-display text-lg mb-2 text-bone">{t('dashboard_smart_valve')}</h3>
+                 <span className="font-mono-data text-[10px] py-1 px-2 border border-current">
+                   {irrigationOn ? "[ ACTIVE. DISCHARGE ]" : "[ STANDBY. DRY ]"}
+                 </span>
               </button>
-            </div>
-          </div>
 
-          <AnimatePresence>
-            {addingTask && (
-              <motion.div 
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                className="flex gap-3 px-2 overflow-hidden"
-              >
-                <input
-                  autoFocus
-                  type="text"
-                  value={newTaskTitle}
-                  onChange={e => setNewTaskTitle(e.target.value)}
-                  onKeyDown={e => { if (e.key === 'Enter') addTask(); if (e.key === 'Escape') setAddingTask(false); }}
-                  placeholder={t('dashboard_task_placeholder')}
-                  className="flex-1 glass-panel px-5 py-3.5 text-sm font-body focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all text-white placeholder:text-white/30 rounded-2xl"
-                />
-                <button 
-                  onClick={addTask} 
-                  className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 rounded-2xl text-sm font-semibold transition-colors shadow-spatial-sm active-scale-smooth"
-                >
-                  {t('dashboard_add_btn')}
-                </button>
-              </motion.div>
-            )}
-          </AnimatePresence>
+              <Link href="/diagnosis" className="cyber-panel p-6 group flex flex-col justify-between hover:bg-solar/10 hover:border-solar hover:shadow-flare">
+                 <div className="flex justify-between w-full">
+                    <Target className="w-6 h-6 text-solar group-hover:rotate-90 transition-transform duration-500" />
+                    <Orbit className="w-4 h-4 text-bone/30 group-hover:animate-spin" />
+                 </div>
+                 <div className="mt-8">
+                    <h3 className="font-display text-lg text-bone drop-shadow-md mb-2">{t('dashboard_disease_scan')}</h3>
+                    <div className="w-full h-auto text-[10px] border-b border-solar/30 pb-1">
+                      <ScrambleText text="> INITIATE_SPECTRAL_ANALYSIS" active={false} />
+                    </div>
+                 </div>
+              </Link>
+           </motion.div>
 
-          <div className="space-y-3">
-            {tasks.map(task => (
-              <motion.div
-                key={task.id}
-                layout
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                className="glass-panel p-4 rounded-2xl flex items-center gap-5 group hover:bg-white/[0.04] transition-colors cursor-pointer"
-                onClick={() => toggleTask(task.id)}
-              >
-                <div className={cn("text-xl transition-all duration-500", task.completed ? "grayscale opacity-30" : "scale-110 drop-shadow-md")}>
-                  {task.icon}
-                </div>
-                <div className="flex-1">
-                  <p className={cn(
-                    "text-sm font-medium transition-all duration-300", 
-                    task.completed ? "text-white/30 line-through" : "text-white/90"
-                  )}>
-                    {task.title}
-                  </p>
-                </div>
-                <div className="flex items-center gap-4">
-                  <div className="w-6 h-6 rounded-full border border-white/20 flex items-center justify-center transition-colors">
-                    {task.completed && <div className="w-4 h-4 rounded-full bg-primary shadow-[0_0_10px_rgba(229,193,108,0.5)]" />}
-                  </div>
-                  <button onClick={(e) => { e.stopPropagation(); deleteTask(task.id); }} className="opacity-0 group-hover:opacity-100 transition-opacity p-2 -mr-2">
-                    <Trash2 className="w-4 h-4 text-white/30 hover:text-destructive transition-colors" />
-                  </button>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </motion.section>
-
-        {/* ═══ Elegant Actions Grid ═══ */}
-        <motion.section variants={spatialItem} className="grid grid-cols-2 gap-4">
-          <Link href="/diagnosis" className="glass-panel p-6 rounded-3xl flex flex-col items-center justify-center gap-3 hover:bg-white/[0.04] transition-all active-scale-smooth group">
-            <ShieldCheck className="w-6 h-6 text-white/50 group-hover:text-primary transition-colors duration-500" />
-            <span className="text-xs font-medium text-white/70">{t('dashboard_disease_scan')}</span>
-          </Link>
-          
-          <button onClick={toggleValve} className={cn(
-            "p-6 rounded-3xl flex flex-col items-center justify-center gap-3 transition-all duration-500 active-scale-smooth shadow-frost",
-            irrigationOn ? "bg-primary/10 border border-primary/20 backdrop-blur-[40px]" : "glass-panel hover:bg-white/[0.04]"
-          )}>
-            <Zap className={cn("w-6 h-6 transition-transform duration-500", irrigationOn ? "text-primary scale-110 drop-shadow-[0_0_15px_rgba(229,193,108,0.5)]" : "text-white/50")} />
-            <div className="text-center">
-              <span className="text-xs font-medium block text-white/70">{t('dashboard_smart_valve')}</span>
-              <span className={cn("text-[9px] uppercase tracking-widest font-semibold mt-1 block", irrigationOn ? "text-primary" : "text-white/30")}>
-                {irrigationOn ? t('dashboard_valve_active') : t('dashboard_valve_off')}
-              </span>
-            </div>
-          </button>
-        </motion.section>
-
-        {/* ═══ AI Advisor Prominent CTA ═══ */}
-        <motion.div variants={spatialItem} className="py-2">
-          <Link href="/advisor" className="block relative group active-scale-smooth">
-            <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-sage/20 rounded-[2rem] blur-xl group-hover:blur-2xl transition-all opacity-50 duration-700" />
-            <div className="relative glass-panel rounded-[2rem] p-5 flex items-center justify-center gap-3 overflow-hidden">
-               <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
-               <Sparkles className="w-5 h-5 text-primary" />
-               <span className="font-display font-medium text-white tracking-wide">Enter AI Consultation</span>
-               <ChevronRight className="w-4 h-4 text-white/50 group-hover:translate-x-1 transition-transform" />
-            </div>
-          </Link>
-        </motion.div>
-
-        {/* ═══ Sync Footer ═══ */}
-        <motion.footer variants={spatialItem} className="text-center pt-8">
-          <p className="text-[10px] font-mono font-medium text-white/30 flex items-center justify-center gap-2 tracking-widest uppercase">
-            <span className="w-1.5 h-1.5 bg-white/20 rounded-full" />
-            {t('dashboard_synced')} {format(lastUpdated, 'HH:mm')}
-          </p>
-        </motion.footer>
+        </motion.main>
       </motion.div>
     </div>
+  );
+}
+
+// A helper wrapper card for the cypher hover effect
+function HoverRefCard({ children, className }: { children: React.ReactNode, className?: string }) {
+  const [isHovered, setIsHovered] = useState(false);
+  return (
+    <motion.div 
+      variants={cyberPanelReveal}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      className={cn("cyber-panel p-5 relative overflow-hidden group", className)}
+    >
+      <div className={cn("transition-opacity duration-300 relative z-10", isHovered ? "opacity-10" : "opacity-100")}>
+        {children}
+      </div>
+
+      {/* Scrambled cypher overlay that fades IN on hover */}
+      <div className={cn("absolute inset-0 p-5 flex flex-col justify-center pointer-events-none transition-all duration-300 z-20", isHovered ? "opacity-100" : "opacity-0 scale-95")}>
+         <div className="text-bio">
+            <ScrambleText text="> DECRYPTING_NODE." active={isHovered} />
+            <ScrambleText text="  VAL: [PROTECTED]" active={isHovered} />
+            <ScrambleText text="  SYS: OK_" active={isHovered} />
+         </div>
+      </div>
+    </motion.div>
+  );
+}
+
+function SpinnerIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="square" strokeLinejoin="miter" {...props}>
+      <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
+    </svg>
   );
 }
